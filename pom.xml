@@ -13,6 +13,8 @@
   <modules>
   		<module>pinoo-common</module>
   		<module>pinoo-core</module>
+  		<module>pinoo-mybatis</module>
+  		<module>pinoo-demo</module>
   </modules>
 
   <properties>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+	
+	<import resource="datasource.xml"/>
+	<!-- <import resource="mongo.xml"/> -->
+    <!-- --><import resource="cache-config.xml"/> 
+    <!-- --><import resource="duboo.xml"/> 
+    
+    
+    
+    <!-- 注解支持，指定扫描路径-->
+    <context:annotation-config/>
+    <context:component-scan base-package="com.casey"/>
+    <bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor"/>
+    
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"
+		p:systemPropertiesMode="1" p:searchSystemEnvironment="true"
+		p:ignoreUnresolvablePlaceholders="true" >
+			<property name="locations"> 	
+				 <list>
+				 	 <value>common.properties</value> 
+				 </list>
+			</property>		
+	</bean>
+    
+    
+    <!-- DAO Configuration-->
+    <bean id="messageDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="com.casey.demo.dao.MessageDao" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+	</bean>
+	
+	<!-- SESSION FACEORY -->
+	<bean id="sqlSessionFactory" class="com.casey.core.mybatis.SqlSessionFactoryBean">
+		<property name="mapperLocations" value="classpath:sql-mapper/*.xml" />
+		<property name="dataSource" ref="datasource" />
+		<property name="configLocation" value="classpath:mybatis-plugin-config.xml" />
+		<property name="cache" ref="redisCache" />
+	</bean>
+    
+</beans>

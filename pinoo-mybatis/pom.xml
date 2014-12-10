@@ -1,0 +1,126 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+	<!-- 
+  <parent>
+    <groupId>com.pinoo</groupId>
+    <artifactId>pinoo-common</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent> -->
+
+  <groupId>com.pinoo</groupId>
+  <artifactId>pinoo-mybatis</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>pinoo-mybatis</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <version-mybatis>3.2.2</version-mybatis>
+	<version-mybatis-spring>1.2.0</version-mybatis-spring>
+	<version-tomcat-jdbc>7.0.39</version-tomcat-jdbc>
+	<version-mysql-connector>5.1.24</version-mysql-connector>
+  </properties>
+
+  <dependencies>
+  
+  	 <dependency>
+    	<groupId>com.pinoo</groupId>
+    	<artifactId>pinoo-common</artifactId>
+    	<version>1.0.0-SNAPSHOT</version>
+     </dependency>
+      
+     <dependency>
+		<groupId>org.mybatis</groupId>
+		<artifactId>mybatis</artifactId>
+		<version>${version-mybatis}</version>
+	 </dependency>
+     
+     <dependency>
+		<groupId>org.mybatis</groupId>
+		<artifactId>mybatis-spring</artifactId>
+		<version>${version-mybatis-spring}</version>
+		<exclusions>
+			<exclusion>
+				<groupId>org.mybatis</groupId>
+				<artifactId>mybatis</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-core</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-tx</artifactId>
+			</exclusion>
+		</exclusions>
+	</dependency>
+	
+	<dependency>
+		<groupId>org.apache.tomcat</groupId>
+		<artifactId>tomcat-jdbc</artifactId>
+		<version>${version-tomcat-jdbc}</version>
+	</dependency>
+	
+	<dependency>
+		<groupId>mysql</groupId>
+		<artifactId>mysql-connector-java</artifactId>
+		<version>${version-mysql-connector}</version>
+	</dependency>
+     
+  </dependencies>
+  
+  <!-- 构建元素 -->
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<encoding>utf-8</encoding>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<descriptors>
+						<descriptor>
+							distribution.xml
+						</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<resources>
+			<resource>
+				<directory>
+                    ${basedir}/src/main/resources
+                </directory>
+				<includes>
+					<include>**/*</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/main/java</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+					<exclude>**/*.class</exclude>
+				</excludes>
+			</resource>
+		</resources>
+	</build>
+</project>

@@ -1,0 +1,134 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+	<!-- 
+  <parent>
+    <groupId>com.pinoo</groupId>
+    <artifactId>pinoo-mybatis</artifactId>
+    <version>1.0-SNAPSHOT</version>
+  </parent> -->
+   
+
+  <groupId>com.pinoo</groupId>
+  <artifactId>pinoo-demo</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>pinoo-demo</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+  	 <dependency>
+    	<groupId>com.pinoo</groupId>
+    	<artifactId>pinoo-mybatis</artifactId>
+    	<version>1.0.0-SNAPSHOT</version>
+     </dependency>
+  
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    
+    
+    <!-- dubbo 相关 -->
+    <dependency>
+    	<groupId>com.alibaba</groupId>
+    	<artifactId>dubbo</artifactId>
+    	<version>2.5.3</version>
+    	<exclusions>
+    		<exclusion>
+    			<groupId>org.springframework</groupId>
+    			<artifactId>spring</artifactId>
+    		</exclusion>
+    	</exclusions>
+    </dependency>
+    
+    
+    <dependency>
+		 <groupId>com.github.sgroschupf</groupId>
+		 <artifactId>zkclient</artifactId>
+		 <version>0.1</version>
+	</dependency>
+  </dependencies>
+  
+  <build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.3</version>
+				<configuration>
+					<descriptors>
+						<descriptor>package.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<resources>
+
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+				<includes>
+					<include>*.*</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/main/resources/${package.environment}</directory>
+				<includes>
+					<include>*.*</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/main/</directory>
+				<includes>
+					<include>webapp/**</include>
+				</includes>
+			</resource>
+		</resources>
+	</build>
+  
+  <profiles>
+		<profile>
+			<id>online</id>
+			<properties>
+				<package.environment>online</package.environment>
+			</properties>
+		</profile>
+		<profile>
+			<id>test</id>
+			<properties>
+				<package.environment>test</package.environment>
+			</properties>
+		</profile>
+		<profile>
+			<id>local</id>
+			<properties>
+				<package.environment>local</package.environment>
+			</properties>
+		</profile>
+	</profiles>
+</project>

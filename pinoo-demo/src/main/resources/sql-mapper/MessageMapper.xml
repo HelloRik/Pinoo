@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.casey.demo.dao.MessageDao">
+
+	<resultMap id="messageResult" type="com.casey.demo.model.Message">
+		<result property="id" column="id" />
+		<result property="title" column="title" />
+		<result property="content" column="content" />
+		<result property="type" column="type" />
+		<result property="status" column="status" />
+		<result property="addTime" column="add_time" />
+	</resultMap>
+	
+	
+	<!-- 
+	<select id="load" parameterType="Integer" resultMap="messageResult">
+		select `id`,`content`,`from`,`to`,`add_time`
+		from `message`
+		where `id` = #{id}
+	</select>
+	
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id"  parameterType="com.casey.demo.model.Message">
+		insert into `message`(`content`,`from`,`to`,`add_time`)
+		values(#{content},#{from},#{to},#{addTime})
+	</insert>
+	 -->
+	
+	<select id="getMsgList" parameterType="Long" resultMap="messageResult">
+		select `id`,`title`,`content`,`type`,`status`,`add_time`
+		from `message`
+		where `status` = #{status} and `type` = #{type}
+	</select>
+	
+	<select id="getMsgListByStatus" parameterType="Long" resultMap="messageResult">
+		select `id`,`title`,`content`,`type`,`status`,`add_time`
+		from `message`
+		where `status` = #{status}
+	</select>
+	
+	<select id="getMsgListByType" parameterType="Long" resultMap="messageResult">
+		select `id`,`title`,`content`,`type`,`status`,`add_time`
+		from `message`
+		where `type` = #{type}
+	</select>
+	
+	
+	
+</mapper>
