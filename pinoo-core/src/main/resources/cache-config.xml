@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<!-- redis template definition -->
+	<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate" p:connection-factory-ref="jedisConnectionFactory" scope="prototype"/>
+	
+	<bean id="stringRedisTemplate" class="org.springframework.data.redis.core.StringRedisTemplate" p:connection-factory-ref="jedisConnectionFactory" scope="prototype"/>
+	
+	
+	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxTotal" value="200" />
+		<property name="maxIdle" value="100" />
+		<property name="minIdle" value="50" />
+		<property name="testOnBorrow" value="false" />
+	</bean>
+	
+	<!-- spring data redis -->  
+    <bean id="jedisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">  
+        <property name="usePool" value="true"></property>  
+        <property name="hostName" value="${redisAddress}" />  
+        <property name="port" value="${redisPort}" />   
+        <property name="timeout" value="100000" />  
+        <property name="database" value="0"/>  
+        <constructor-arg index="0" ref="jedisPoolConfig" />  
+    </bean>  
+    
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"
+		p:systemPropertiesMode="1" p:searchSystemEnvironment="true"
+		p:ignoreUnresolvablePlaceholders="true" >
+			<property name="locations"> 	
+				 <list>
+				 	 <value>common.properties</value> 
+				 </list>
+			</property>		
+	</bean>
+
+</beans>

@@ -1,0 +1,102 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.pinoo</groupId>
+    <artifactId>pinoo</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>com.pinoo</groupId>
+  <artifactId>pinoo-core</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>pinoo-core</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <dependency>
+    	<groupId>com.pinoo</groupId>
+    	<artifactId>pinoo-common</artifactId>
+    	<version>1.0.0-SNAPSHOT</version>
+     </dependency>
+	 
+	 <!-- mongodb java driver -->
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+			<version>2.11.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>bson</artifactId>
+			<version>2.11.1</version>
+		</dependency>
+		<!-- mongodb java driver -->
+		
+	    <dependency>
+	      <groupId>junit</groupId>
+	      <artifactId>junit</artifactId>
+	      <version>3.8.1</version>
+	      <scope>test</scope>
+	    </dependency>
+  </dependencies>
+  
+  <!-- 构建元素 -->
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<encoding>utf-8</encoding>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2</version>
+				<configuration>
+					<descriptors>
+						<descriptor>
+							distribution.xml
+						</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id>
+						<phase>package</phase>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<resources>
+			<resource>
+				<directory>
+                    ${basedir}/src/main/resources
+                </directory>
+				<includes>
+					<include>**/*</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/main/java</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+					<exclude>**/*.class</exclude>
+				</excludes>
+			</resource>
+		</resources>
+	</build>
+</project>

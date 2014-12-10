@@ -12,6 +12,7 @@
   
   <modules>
   		<module>pinoo-common</module>
+  		<module>pinoo-core</module>
   </modules>
 
   <properties>

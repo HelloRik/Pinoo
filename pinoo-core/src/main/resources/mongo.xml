@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:p="http://www.springframework.org/schema/p"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+  xsi:schemaLocation="http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+  <!-- MONGO客户端  mongoDbFactory公用这一个客户端 -->
+  
+  <mongo:mongo host="${mongoAdderss}" port="${mongoPort}">
+  	<mongo:options threads-allowed-to-block-for-connection-multiplier="10" connections-per-host="100" write-number="1" />
+  </mongo:mongo>
+  <mongo:db-factory id="mongoDbFactory" dbname="${mongoDbName}"  mongo-ref="mongo"></mongo:db-factory>
+
+  <!-- 映射转换器，扫描back-package目录下的文件，根据注释，把它们作为mongodb的一个collection的映射 --> 
+  <mongo:mapping-converter id="mongoConverter" base-package="com.downjoy.app.feed.dao.model" />
+
+  <!-- mongodb的主要操作对象，所有对mongodb的增删改查的操作都是通过它完成 -->
+  <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+  		<constructor-arg ref="mongoDbFactory" />
+  </bean>
+
+  <!-- mongodb bean的仓库目录，会自动扫描扩展了MongoRepository接口的接口进行注入 -->
+  <mongo:repositories base-package="com.downjoy.app.feed.dao" />
+
+</beans>
