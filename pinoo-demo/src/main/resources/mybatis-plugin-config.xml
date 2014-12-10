@@ -4,8 +4,8 @@
 <configuration>
 	
 	<plugins>
-		<plugin interceptor="com.casey.core.mybatis.interceptor.ExecutorQueryMethodInterceptor"></plugin>
-		<plugin interceptor="com.casey.core.mybatis.interceptor.ExecutorUpdateMethodInterceptor"></plugin>
+		<plugin interceptor="com.pinoo.core.mybatis.interceptor.ExecutorQueryMethodInterceptor"></plugin>
+		<plugin interceptor="com.pinoo.core.mybatis.interceptor.ExecutorUpdateMethodInterceptor"></plugin>
 	</plugins>
 	 
 </configuration>

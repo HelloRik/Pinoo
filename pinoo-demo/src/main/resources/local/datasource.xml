@@ -2,7 +2,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans default-autowire="byName">
 	
-	<bean id="datasource"  class="com.casey.core.mybatis.datasource.RoundRobinDataSource">
+	<bean id="datasource"  class="com.pinoo.core.mybatis.datasource.RoundRobinDataSource">
 	      <property name="masterDataSource"  ref="masterDataSource"></property>
 	      <property name="slaveDataSources">
 	          <list>

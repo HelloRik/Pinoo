@@ -32,12 +32,12 @@
     
     <!-- DAO Configuration-->
     <bean id="messageDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
-		<property name="mapperInterface" value="com.casey.demo.dao.MessageDao" />
+		<property name="mapperInterface" value="com.pinoo.demo.dao.MessageDao" />
 		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
 	</bean>
 	
 	<!-- SESSION FACEORY -->
-	<bean id="sqlSessionFactory" class="com.casey.core.mybatis.SqlSessionFactoryBean">
+	<bean id="sqlSessionFactory" class="com.pinoo.core.mybatis.SqlSessionFactoryBean">
 		<property name="mapperLocations" value="classpath:sql-mapper/*.xml" />
 		<property name="dataSource" ref="datasource" />
 		<property name="configLocation" value="classpath:mybatis-plugin-config.xml" />
