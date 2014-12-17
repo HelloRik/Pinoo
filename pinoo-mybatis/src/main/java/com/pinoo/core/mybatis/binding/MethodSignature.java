@@ -3,6 +3,8 @@ package com.pinoo.core.mybatis.binding;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -20,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.binding.BindingException;
+import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
@@ -33,15 +36,12 @@ import com.pinoo.core.mybatis.annotation.method.MethodParam;
 import com.pinoo.core.mybatis.annotation.method.Page;
 import com.pinoo.core.mybatis.annotation.method.PageCursor;
 import com.pinoo.core.mybatis.annotation.method.PageSize;
-import com.pinoo.core.mybatis.annotation.model.ColumnKey;
+import com.pinoo.core.mybatis.annotation.model.Column;
 import com.pinoo.core.mybatis.annotation.model.ModelInfo;
 import com.pinoo.core.mybatis.annotation.model.PrimaryKey;
-import com.pinoo.core.mybatis.annotation.model.SortKey;
+import com.pinoo.core.mybatis.annotation.model.Sort;
 import com.pinoo.core.mybatis.binding.MapperMethod.ParamMap;
-import com.pinoo.core.mybatis.builder.DeleteMappedStatementBuilder;
-import com.pinoo.core.mybatis.builder.InsertMappedStatementBuilder;
-import com.pinoo.core.mybatis.builder.LoadMappedStatementBuilder;
-import com.pinoo.core.mybatis.builder.UpdateMappedStatementBuilder;
+import com.pinoo.core.mybatis.builder.SqlMapperXmlBuilder;
 
 /**
  * 为每个方法定义一个解析
@@ -241,9 +241,9 @@ public class MethodSignature {
                     Method writeMethod = one.getWriteMethod();
                     Method readMethod = one.getReadMethod();
 
-                    ColumnKey columnKey = field.getAnnotation(ColumnKey.class);
-                    if (columnKey != null && StringUtils.isNotEmpty(columnKey.column())) {
-                        dbName = columnKey.column();
+                    Column columnKey = field.getAnnotation(Column.class);
+                    if (columnKey != null && StringUtils.isNotEmpty(columnKey.dbName())) {
+                        dbName = columnKey.dbName();
                     }
 
                     FieldInfo fieldInfo = new FieldInfo(field, name, dbName, writeMethod, readMethod);
@@ -283,7 +283,7 @@ public class MethodSignature {
         }
     }
 
-    private void initMapperStatement() {
+    private void initMapperStatement() throws Exception {
 
         // MappedStatement ms =
         // this.configuration.getMappedStatement("com.pinoo.demo.dao.MessageDao.load");
@@ -294,15 +294,23 @@ public class MethodSignature {
 
         synchronized (this.entityClass) {
             if (this.syncMapperStatementInitMap.get(this.entityClass) == null) {
-                new LoadMappedStatementBuilder(this.loadMappedStatementId, this).build();
-                new InsertMappedStatementBuilder(this.insertMappedStatementId, this).build();
-                new UpdateMappedStatementBuilder(this.updateMappedStatementId, this).build();
-                new DeleteMappedStatementBuilder(this.deleteMappedStatementId, this).build();
-                // insert
-                // MappedStatement ms =
-                // this.configuration.getMappedStatement("com.pinoo.demo.dao.MessageDao.insert");
-                //
-                // System.out.println(ms);
+
+                // MappedStatement ms = this.configuration
+                // .getMappedStatement("com.pinoo.demo.dao.MessageDao.getMsgListByStatus");
+
+                SqlMapperXmlBuilder sqlMapperXmlBuilder = new SqlMapperXmlBuilder(this);
+
+                String xml = sqlMapperXmlBuilder.buildXml();
+
+                System.out.println("======================");
+                System.out.println(xml);
+                System.out.println("======================");
+
+                InputStream input = new ByteArrayInputStream(xml.getBytes());
+                XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(input, configuration, "",
+                        configuration.getSqlFragments());
+                xmlMapperBuilder.parse();
+
                 this.syncMapperStatementInitMap.put(this.entityClass, this.loadMappedStatementId);
             }
         }
@@ -352,8 +360,8 @@ public class MethodSignature {
             if (!"class".equals(fieldName)) {
                 Field field = ReflectionUtil.getFieldByName(fieldName, entityClass);
                 if (field != null) {
-                    SortKey sortKey = field.getAnnotation(SortKey.class);
-                    if (null != sortKey) {
+                    Sort sort = field.getAnnotation(Sort.class);
+                    if (null != sort) {
                         String name = one.getName();
                         String dbName = name;
                         Method writeMethod = one.getWriteMethod();
@@ -370,9 +378,9 @@ public class MethodSignature {
         this.objectFormat = entityClass.getName() + objectCacheKeySign;
         this.listFormat = entityClass.getName() + listCacheKeySign;
         // 找出size ,cursor对应的参数序列
-        this.cursorIndex = AnnotationScaner.scanMethodAnnotation(method, PageCursor.class);
-        this.pageIndex = AnnotationScaner.scanMethodAnnotation(method, Page.class);
-        this.sizeIndex = AnnotationScaner.scanMethodAnnotation(method, PageSize.class);
+        this.cursorIndex = AnnotationScaner.scanMethodParamIndex(method, PageCursor.class);
+        this.pageIndex = AnnotationScaner.scanMethodParamIndex(method, Page.class);
+        this.sizeIndex = AnnotationScaner.scanMethodParamIndex(method, PageSize.class);
         // 生成unformatCacheKey
 
         synchronized (this.entityClass) {
@@ -655,5 +663,9 @@ public class MethodSignature {
 
     public Configuration getConfiguration() {
         return configuration;
+    }
+
+    public Class<?> getMapperInterface() {
+        return mapperInterface;
     }
 }

@@ -488,10 +488,10 @@ public class SqlSessionFactoryBean implements FactoryBean<SqlSessionFactory>, In
 
         if (!isEmpty(this.mapperLocations)) {
             for (Resource mapperLocation : this.mapperLocations) {
+
                 if (mapperLocation == null) {
                     continue;
                 }
-
                 try {
                     XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(mapperLocation.getInputStream(),
                             configuration, mapperLocation.toString(), configuration.getSqlFragments());

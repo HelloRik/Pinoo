@@ -2,9 +2,9 @@ package com.pinoo.demo.model;
 
 import java.io.Serializable;
 
-import com.pinoo.core.mybatis.annotation.model.ColumnKey;
+import com.pinoo.core.mybatis.annotation.model.Column;
 import com.pinoo.core.mybatis.annotation.model.PrimaryKey;
-import com.pinoo.core.mybatis.annotation.model.SortKey;
+import com.pinoo.core.mybatis.annotation.model.Sort;
 
 public class Message implements Serializable {
 
@@ -17,14 +17,12 @@ public class Message implements Serializable {
 
     private String content;
 
-    // @Field("create_by")
     private int type;
 
-    // @Field("session_id")
     private int status;
 
-    @SortKey
-    @ColumnKey(column = "add_time")
+    @Sort
+    @Column(dbName = "add_time")
     private long addTime;
 
     public long getId() {
@@ -39,24 +37,14 @@ public class Message implements Serializable {
         return content;
     }
 
-    /**
-     * @return Returns the title
-     */
     public String getTitle() {
         return title;
     }
 
-    /**
-     * @param title
-     *            The title to set.
-     */
     public void setTitle(String title) {
         this.title = title;
     }
 
-    /**
-     * @return Returns the type
-     */
     public int getType() {
         return type;
     }

@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 缓存参数-对应MODEL字段
+ * 方法参数-对应MODEL字段
  * 
  * @Filename: CacheParam.java
  * @Version: 1.0
@@ -19,4 +19,5 @@ import java.lang.annotation.Target;
 public @interface MethodParam {
     String value();
 
+    String sign() default "=";
 }

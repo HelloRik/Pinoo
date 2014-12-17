@@ -316,6 +316,7 @@ public class MapperMethod {
             try {
                 ms = configuration.getMappedStatement(name);
             } catch (Exception e) {
+                e.printStackTrace();
                 throw new BindingException("Invalid bound statement (not found): " + name, e);
             }
             type = ms.getSqlCommandType();

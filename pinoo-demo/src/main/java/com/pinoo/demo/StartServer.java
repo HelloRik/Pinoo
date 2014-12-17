@@ -25,55 +25,33 @@ public class StartServer {
 
         RedisTemplate templet = context.getBean("redisTemplate", RedisTemplate.class);
 
-        // templet.delete("com.pinoo.demo.dao.MessageDao_object_0_1");
-        // templet.delete("com.pinoo.demo.dao.MessageDao_object_0_2");
-        // templet.delete("com.pinoo.demo.model.Message_object_2");
+        // templet.delete("com.pinoo.demo.model.Message_list__status_2_type_1");
         // templet.delete("com.pinoo.demo.model.Message_object_3");
         // templet.delete("com.pinoo.demo.model.Message_object_4");
         // templet.delete("com.pinoo.demo.model.Message_object_5");
         // templet.delete("com.pinoo.demo.model.Message_object_6");
 
         MessageDao dao = context.getBean(MessageDao.class);
-
+        //
         Message msg = new Message();
-        msg.setTitle("title!!!");
-        msg.setContent("7888888");
+        msg.setTitle("test");
+        msg.setContent("1234444");
         msg.setAddTime(System.currentTimeMillis());
         msg.setType(2);
         msg.setStatus(2);
 
-        // dao.insert(msg);
+        dao.insert(msg);
         //
-        // msg = dao.load(msg.getId());
+        // msg = dao.load(30);
+        // System.out.println(msg);
+        // msg.setType(2);
+        // dao.update(msg);
         //
-        // System.out.println("@@@@@" + msg);
-        //
-        // msg = dao.load(msg.getId());
-        //
-        // System.out.println("@@@@@" + msg);
-
-        msg = dao.load(31);
-        msg.setType(2);
-        dao.update(msg);
-
-        List<Message> msgs = null;
-        // dao.getMsgListByStatus(2, -1, 10);
-        // System.out.println(msgs);
-
-        // dao.insert(msg);
-        // dao.delete(29);
-
-        // msgs = dao.getMsgListByStatus(2, -1, 10);
-        // System.out.println(msgs);
-
-        // msgs = dao.getMsgListByType(1, -1, 10);
-        // System.out.println(msgs);
-
-        msgs = dao.getMsgList(2, 1, -1, 10);
+        List<Message> msgs = dao.getMsgList(2, 1, -1, 10);
         System.out.println(msgs);
-
+        //
         msgs = dao.getMsgList(2, 2, -1, 10);
         System.out.println(msgs);
-        // com.alibaba.dubbo.container.Main a;
+
     }
 }

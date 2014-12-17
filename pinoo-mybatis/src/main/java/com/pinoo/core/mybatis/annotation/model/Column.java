@@ -16,13 +16,13 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface ColumnKey {
+public @interface Column {
 
     /**
      * 数据库的字段名，如果名字一样 这个可以不填。
      * 
      * @return
      */
-    String column() default "";
+    String dbName() default "";
 
 }

@@ -22,6 +22,16 @@ import org.apache.ibatis.session.Configuration;
 
 import com.pinoo.core.mybatis.binding.MethodSignature;
 
+/**
+ * MappedStatement构造器
+ * 
+ * @Filename: AbstractMappedStatementBuilder.java
+ * @Version: 1.0
+ * @Author: jujun 鞠钧
+ * @Email: hello_rik@sina.com
+ * 
+ */
+@Deprecated
 public abstract class AbstractMappedStatementBuilder implements IMappedStatementBuilder {
 
     protected String mappedStatementId;

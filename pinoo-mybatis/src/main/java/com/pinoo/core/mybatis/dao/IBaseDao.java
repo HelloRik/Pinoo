@@ -1,5 +1,10 @@
 package com.pinoo.core.mybatis.dao;
 
+import org.apache.ibatis.mapping.SqlCommandType;
+
+import com.pinoo.core.mybatis.annotation.method.Method;
+import com.pinoo.core.mybatis.annotation.method.MethodParam;
+
 /**
  * 所有DAO操作的基类
  * 
@@ -11,12 +16,16 @@ package com.pinoo.core.mybatis.dao;
  */
 public interface IBaseDao<T> {
 
-    public T load(long id);
+    @Method(sqlCommandType = SqlCommandType.SELECT, parameterType = "Long")
+    public T load(@MethodParam("id") long id);
 
+    @Method(sqlCommandType = SqlCommandType.INSERT)
     public int insert(T model);
 
+    @Method(sqlCommandType = SqlCommandType.UPDATE)
     public int update(T model);
 
+    @Method(sqlCommandType = SqlCommandType.DELETE)
     public int delete(long id);
 
 }

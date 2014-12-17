@@ -4,6 +4,7 @@ import org.apache.ibatis.mapping.SqlCommandType;
 
 import com.pinoo.core.mybatis.binding.MethodSignature;
 
+@Deprecated
 public class LoadMappedStatementBuilder extends AbstractMappedStatementBuilder {
 
     public LoadMappedStatementBuilder(String mappedStatementId, MethodSignature method) {

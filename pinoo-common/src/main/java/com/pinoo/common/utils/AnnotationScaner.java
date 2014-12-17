@@ -57,7 +57,14 @@ public class AnnotationScaner {
         return classes;
     }
 
-    public static int scanMethodAnnotation(Method method, Class<?> annotationClass) {
+    /**
+     * 获取注解在参数中得下标
+     * 
+     * @param method
+     * @param annotationClass
+     * @return
+     */
+    public static int scanMethodParamIndex(Method method, Class<?> annotationClass) {
         Annotation[][] as = method.getParameterAnnotations();
         for (int i = 0; i < as.length; i++) {
             for (int n = 0; n < as[i].length; n++) {
@@ -69,6 +76,29 @@ public class AnnotationScaner {
             }
         }
         return -1;
+    }
+
+    /**
+     * 获取方法参数注解
+     * 
+     * @param method
+     * @param annotationClass
+     * @return
+     */
+    public static <T> List<T> scanMethodParam(Method method, Class<T> annotationClass) {
+        int paramSize = method.getParameterTypes().length;
+        List<T> anns = new ArrayList<T>();
+        Annotation[][] as = method.getParameterAnnotations();
+        for (int i = 0; i < as.length; i++) {
+            for (int n = 0; n < as[i].length; n++) {
+                Annotation a = as[i][n];
+                if (a.annotationType().equals(annotationClass)) {
+                    anns.add(i, (T) a);
+                    continue;
+                }
+            }
+        }
+        return anns;
     }
 
     public static Map<Method, Annotation> scanMethod(String packageName, Class annotationClass) {
