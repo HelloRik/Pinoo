@@ -38,6 +38,37 @@ public interface ICache {
     public void removeObject(String key);
 
     /**
+     * 设置计数缓存
+     * 
+     * @param key
+     * @param count
+     * @return
+     */
+    public void setCount(String key, int count);
+
+    /**
+     * 获取计数缓存
+     * 
+     * @param key
+     * @return
+     */
+    public int getCount(String key);
+
+    /**
+     * 增加计数缓存
+     * 
+     * @param key
+     */
+    public void increaseCount(String key, int count);
+
+    /**
+     * 减少计数缓存
+     * 
+     * @param key
+     */
+    public void decreaseCount(String key, int count);
+
+    /**
      * 设置列表缓存
      * 
      * @param listCacheKey

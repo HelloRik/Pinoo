@@ -114,14 +114,16 @@ public class MapperMethod {
                 }
             } else if (method.returnsMap()) {
                 result = executeForMap(sqlSession, args);
-            }
-
-            // else if (method.returnsCount()) {
-            // Object param = method.convertArgsToSqlCommandParam(args);
-            // result = sqlSession.selectOne(command.getName(), param);
-            // }
-
-            else {
+            } else if (method.returnsCount()) {
+                int count = cache.getCount(cacheKey);
+                if (count <= 0) {
+                    Object param = method.convertArgsToSqlCommandParam(args);
+                    count = sqlSession.selectOne(command.getName(), param);
+                    if (count > 0)
+                        cache.setCount(cacheKey, count);
+                }
+                result = count;
+            } else {
                 if (method.getMethodName().equals("load") && method.getParamSize() == 1) {
                     result = getObject(cacheKey, sqlSession, args[0]);
                 } else {
@@ -151,46 +153,32 @@ public class MapperMethod {
     private void addToList(Object obj) throws Exception {
         List<String> unformatKeys = method.getUnformatCacheKeys();
         for (String key : unformatKeys) {
-            // System.out.println("!!!!!!!!" + key);
-            String listCacheKey = method.formartCacheKey(obj, key);
-            // System.out.println("$$$$$$$$" + listCacheKey);
-            cache.addToList(listCacheKey, obj, method.getPrimaryFieldInfo(), method.getSortFieldInfo());
+            String cacheKey = method.formartCacheKey(obj, key);
+            if (cacheKey.startsWith(method.getListFormat()))
+                cache.addToList(cacheKey, obj, method.getPrimaryFieldInfo(), method.getSortFieldInfo());
+            else
+                cache.increaseCount(cacheKey, 1);
         }
     }
 
     private void removeToList(Object obj) throws Exception {
         List<String> unformatKeys = method.getUnformatCacheKeys();
         for (String key : unformatKeys) {
-            // System.out.println("!!!!!!!!" + key);
-            String listCacheKey = method.formartCacheKey(obj, key);
-            System.out.println("$$$$$$$$" + listCacheKey);
-            cache.removeToList(listCacheKey, method.getPrimaryFieldInfo().getReadMethod().invoke(obj));
+            String cacheKey = method.formartCacheKey(obj, key);
+            if (cacheKey.startsWith(method.getListFormat()))
+                cache.removeToList(cacheKey, method.getPrimaryFieldInfo().getReadMethod().invoke(obj));
+            else
+                cache.decreaseCount(cacheKey, 1);
         }
     }
 
     private Object getObject(String cacheKey, SqlSession sqlSession, Object id) {
-        // System.out.println("!!!!!!!!" + cacheKey);
         Object result = cache.getObject(cacheKey);
         if (result == null) {
             result = sqlSession.selectOne(method.getLoadMappedStatementId(), id);
             cache.setObject(cacheKey, result);
         }
         return result;
-    }
-
-    private void addToCache(Object obj) throws Exception {
-        String listKey = method.getListFormat();
-        // String countKey = entityClass.getName() + queryCountCacheKeySign;
-        List<String> unformatCacheKeys = method.getUnformatCacheKeys();
-        for (String cacheKey : unformatCacheKeys) {
-            cacheKey = method.formartCacheKey(obj, cacheKey);
-            if (cacheKey.startsWith(listKey)) {
-                cache.addToList(cacheKey, obj, method.getPrimaryFieldInfo(), method.getSortFieldInfo());
-            }
-            // else if (cacheKey.startsWith(countKey)) {
-            // updateCountCache(cacheKey, INCR_STEP, DEFAULT_INCR_SETP);
-            // }
-        }
     }
 
     private boolean checkResult(Object result) {

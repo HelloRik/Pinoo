@@ -208,7 +208,6 @@ public class ReflectionUtil {
      */
     public static Class<?> getMethodReturnGenricType(Method method, int index) {
         Type genType = method.getGenericReturnType();
-        // System.out.println("#$%$#@#" + genType);
         if (!(genType instanceof ParameterizedType)) {
             return Object.class;
         }
@@ -224,4 +223,27 @@ public class ReflectionUtil {
         }
         return (Class) params[index];
     }
+
+    /**
+     * 获取方法返回类型
+     * 
+     * @param method
+     * @return
+     */
+    public static Class<?> getMethodReturnType(Method method) {
+        return method.getReturnType();
+    }
+
+    /**
+     * 判断方法返回的是否数字类型
+     * 
+     * @param method
+     * @return
+     */
+    public static boolean isMethodReturnCount(Method method) {
+        Class<?> returnType = getMethodReturnType(method);
+        return (Integer.class.equals(returnType) || Integer.TYPE.equals(returnType) || Long.class.equals(returnType) || Long.TYPE
+                .equals(returnType));
+    }
+
 }

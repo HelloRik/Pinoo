@@ -99,12 +99,31 @@ public class RedisCache implements ICache, InitializingBean {
         }
     }
 
-    public void setTemplet(RedisTemplate templet) {
-        this.templet = templet;
+    @Override
+    public void setCount(String key, int count) {
+        countOps.set(key, String.valueOf(count));
     }
 
-    public void setStringRedisTemplate(StringRedisTemplate stringRedisTemplate) {
-        this.stringRedisTemplate = stringRedisTemplate;
+    @Override
+    public int getCount(String key) {
+        if (this.stringRedisTemplate.hasKey(key)) {
+            return Integer.parseInt(countOps.get(key));
+        }
+        return 0;
+    }
+
+    @Override
+    public void increaseCount(String key, int count) {
+        if (this.stringRedisTemplate.hasKey(key)) {
+            countOps.increment(key, count);
+        }
+    }
+
+    @Override
+    public void decreaseCount(String key, int count) {
+        if (this.stringRedisTemplate.hasKey(key)) {
+            countOps.increment(key, 0 - count);
+        }
     }
 
     @Override
@@ -151,6 +170,14 @@ public class RedisCache implements ICache, InitializingBean {
             logger.info("removeToList cache :{},model:{}", listCacheKey, id);
             this.queryZsetOps.remove(listCacheKey, id);
         }
+    }
+
+    public void setTemplet(RedisTemplate templet) {
+        this.templet = templet;
+    }
+
+    public void setStringRedisTemplate(StringRedisTemplate stringRedisTemplate) {
+        this.stringRedisTemplate = stringRedisTemplate;
     }
 
 }

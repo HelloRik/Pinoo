@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import com.pinoo.demo.dao.MessageDao;
 import com.pinoo.demo.model.Message;
@@ -24,8 +25,9 @@ public class StartServer {
         logger.info("=================================");
 
         RedisTemplate templet = context.getBean("redisTemplate", RedisTemplate.class);
+        StringRedisTemplate stringRedisTemplet = context.getBean(StringRedisTemplate.class);
 
-        // templet.delete("com.pinoo.demo.model.Message_list__status_2_type_1");
+        // stringRedisTemplet.delete("com.pinoo.demo.model.Message_count__type_1");
         // templet.delete("com.pinoo.demo.model.Message_object_3");
         // templet.delete("com.pinoo.demo.model.Message_object_4");
         // templet.delete("com.pinoo.demo.model.Message_object_5");
@@ -40,12 +42,16 @@ public class StartServer {
         msg.setType(2);
         msg.setStatus(2);
 
-        dao.insert(msg);
+        // dao.insert(msg);
+
+        msg = dao.load(30);
+        System.out.println(msg);
+        msg.setType(1);
+        msg.setStatus(1);
+        dao.update(msg);
         //
         // msg = dao.load(30);
         // System.out.println(msg);
-        // msg.setType(2);
-        // dao.update(msg);
         //
         List<Message> msgs = dao.getMsgList(2, 1, -1, 10);
         System.out.println(msgs);
@@ -53,5 +59,10 @@ public class StartServer {
         msgs = dao.getMsgList(2, 2, -1, 10);
         System.out.println(msgs);
 
+        msgs = dao.getMsgList(1, 1, -1, 10);
+        System.out.println(msgs);
+
+        System.out.println(dao.getMsgCountByType(1));
+        System.out.println(dao.getMsgCountByType(2));
     }
 }

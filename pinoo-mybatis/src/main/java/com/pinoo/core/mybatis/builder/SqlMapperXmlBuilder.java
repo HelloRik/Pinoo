@@ -18,6 +18,7 @@ import org.w3c.dom.Element;
 
 import com.pinoo.common.annotation.model.FieldInfo;
 import com.pinoo.common.utils.AnnotationScaner;
+import com.pinoo.common.utils.ReflectionUtil;
 import com.pinoo.core.mybatis.annotation.method.Method;
 import com.pinoo.core.mybatis.annotation.method.MethodParam;
 import com.pinoo.core.mybatis.binding.MethodSignature;
@@ -143,6 +144,9 @@ public class SqlMapperXmlBuilder {
 
     private void buildSelectCommand(Document document, Element root, String id, Method methodAnn,
             java.lang.reflect.Method method) throws Exception {
+
+        boolean isReturnCount = ReflectionUtil.isMethodReturnCount(method);
+
         Element selectCommand = createElement(document, root, "select");
         selectCommand.setAttribute("id", id);
 
@@ -156,6 +160,11 @@ public class SqlMapperXmlBuilder {
             selectCommand.setAttribute("resultMap", methodAnn.resultMap());
         } else if (StringUtils.isNotEmpty(methodAnn.resultType())) {
             selectCommand.setAttribute("resultType", methodAnn.resultType());
+        } else if (isReturnCount) {
+            if (method.getReturnType().equals(Long.class))
+                selectCommand.setAttribute("resultType", "Long");
+            else
+                selectCommand.setAttribute("resultType", "Integer");
         } else {
             selectCommand.setAttribute("resultMap", resultMapName);
         }
@@ -163,8 +172,17 @@ public class SqlMapperXmlBuilder {
         StringBuffer sb = new StringBuffer();
         if (StringUtils.isNotEmpty(methodAnn.sql())) {
             sb.append(methodAnn.sql());
+        } else if (isReturnCount) {
+            sb.append("select count(*) from " + this.methodSignature.getTableName());
         } else {
-            sb.append("select * from " + this.methodSignature.getTableName());
+            sb.append("select ");
+            for (int i = 0; i < methodSignature.getFields().size(); i++) {
+                FieldInfo info = methodSignature.getFields().get(i);
+                sb.append("`" + info.getDbName() + "`");
+                if (i < methodSignature.getFields().size() - 1)
+                    sb.append(",");
+            }
+            sb.append(" from " + this.methodSignature.getTableName());
         }
         boolean isFirst = true;
         List<MethodParam> paramAnns = AnnotationScaner.scanMethodParam(method, MethodParam.class);

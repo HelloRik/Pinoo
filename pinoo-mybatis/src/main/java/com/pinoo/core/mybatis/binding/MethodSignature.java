@@ -20,7 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang.IllegalClassException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ibatis.annotations.MapKey;
-import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.binding.BindingException;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.session.Configuration;
@@ -80,7 +79,7 @@ public class MethodSignature {
 
     private boolean paramsObject;
 
-    private boolean paramsMany;
+    // private boolean paramsMany;
 
     private boolean paramsMap;
 
@@ -97,6 +96,8 @@ public class MethodSignature {
     private final boolean hasNamedParameters;
 
     protected static final String listCacheKeySign = "_list_";
+
+    protected static final String countCacheKeySign = "_count_";
 
     protected static final String listCountCacheKeySign = "_list_count_%s_%s";
 
@@ -131,6 +132,8 @@ public class MethodSignature {
 
     private String listFormat;
 
+    private String countFormat;
+
     private int cursorIndex;
 
     private int pageIndex;
@@ -151,8 +154,7 @@ public class MethodSignature {
         this.returnType = method.getReturnType();
         this.returnsVoid = void.class.equals(this.returnType);
         this.returnsMany = (configuration.getObjectFactory().isCollection(this.returnType) || this.returnType.isArray());
-        this.returnsCount = (Integer.class.equals(this.returnType) || Integer.TYPE.equals(this.returnType)
-                || Long.class.equals(this.returnType) || Long.TYPE.equals(this.returnType));
+        this.returnsCount = ReflectionUtil.isMethodReturnCount(method);
         this.mapKey = getMapKey(method);
         this.returnsMap = (this.mapKey != null);
         this.returnsObject = (!this.returnsMany && !this.returnsCount && !this.returnsMap);
@@ -174,6 +176,8 @@ public class MethodSignature {
         } else if (returnsMany()) {
             cacheKey = this.listFormat;
         } else if (returnsMap()) {
+        } else if (returnsCount()) {
+            cacheKey = this.countFormat;
         } else {
             return String.format(this.objectFormat, args[0]);
         }
@@ -255,32 +259,32 @@ public class MethodSignature {
 
     private void initMethodParams() {
         this.paramSize = method.getParameterTypes().length;
-        if (paramSize == 1) {
-            // Annotation[] annotations = method.getParameterAnnotations()[0];
-            // for (int i = 0; i < annotations.length; i++) {
-            // Annotation one = annotations[i];
-            // if (one instanceof ParamType) {
-            // ParamType type = (ParamType) one;
-            // EnumParamType paramType = type.type();
-            // if (paramType.equals(EnumParamType.ID)) {
-            // this.paramsId = true;
-            // } else if (paramType.equals(EnumParamType.OBJECT)) {
-            // this.paramsObject = true;
-            // } else {
-            // this.paramsMap = true;
-            // }
-            // }
-            // }
-        } else if (this.paramSize > 1) {
-            this.paramsMany = true;
-
-            // for (Map.Entry<Integer, String> entry : params.entrySet()) {
-            // int index = entry.getKey();
-            // if (index != this.cursorIndex && index != this.pageIndex && index
-            // != this.sizeIndex)
-            // cacheKey += "_" + entry.getValue() + "_" + args[entry.getKey()];
-            // }
-        }
+        // if (paramSize == 1) {
+        // Annotation[] annotations = method.getParameterAnnotations()[0];
+        // for (int i = 0; i < annotations.length; i++) {
+        // Annotation one = annotations[i];
+        // if (one instanceof ParamType) {
+        // ParamType type = (ParamType) one;
+        // EnumParamType paramType = type.type();
+        // if (paramType.equals(EnumParamType.ID)) {
+        // this.paramsId = true;
+        // } else if (paramType.equals(EnumParamType.OBJECT)) {
+        // this.paramsObject = true;
+        // } else {
+        // this.paramsMap = true;
+        // }
+        // }
+        // }
+        // } else if (this.paramSize > 1) {
+        // this.paramsMany = true;
+        //
+        // for (Map.Entry<Integer, String> entry : params.entrySet()) {
+        // int index = entry.getKey();
+        // if (index != this.cursorIndex && index != this.pageIndex && index
+        // != this.sizeIndex)
+        // cacheKey += "_" + entry.getValue() + "_" + args[entry.getKey()];
+        // }
+        // }
     }
 
     private void initMapperStatement() throws Exception {
@@ -377,6 +381,7 @@ public class MethodSignature {
     private void initCacheFormat() {
         this.objectFormat = entityClass.getName() + objectCacheKeySign;
         this.listFormat = entityClass.getName() + listCacheKeySign;
+        this.countFormat = entityClass.getName() + countCacheKeySign;
         // 找出size ,cursor对应的参数序列
         this.cursorIndex = AnnotationScaner.scanMethodParamIndex(method, PageCursor.class);
         this.pageIndex = AnnotationScaner.scanMethodParamIndex(method, Page.class);
@@ -384,37 +389,46 @@ public class MethodSignature {
         // 生成unformatCacheKey
 
         synchronized (this.entityClass) {
-            Method[] methods = this.mapperInterface.getMethods();
-            List<String> unformatCacheKeyList = new ArrayList<String>();
-            for (Method method : methods) {
-                Class<?> returnType = method.getReturnType();
-                boolean returnsMany = (configuration.getObjectFactory().isCollection(returnType) || returnType
-                        .isArray());
-                String cacheKey = entityClass.getName();
-                if (returnsMany) {
-                    cacheKey = cacheKey + listCacheKeySign;
-                } else {
-                    continue;
+            if (unformatCacheKeys.get(this.entityClass) == null) {
+                Method[] methods = this.mapperInterface.getMethods();
+                List<String> unformatCacheKeyList = new ArrayList<String>();
+                for (Method method : methods) {
+                    String methodName = method.getName();
+                    if (methodName.equals("load") || methodName.equals("insert") || methodName.equals("update")
+                            || methodName.equals("delete"))
+                        continue;
+
+                    Class<?> returnType = method.getReturnType();
+                    boolean returnsMany = (configuration.getObjectFactory().isCollection(returnType) || returnType
+                            .isArray());
+                    boolean returnCount = ReflectionUtil.isMethodReturnCount(method);
+                    String cacheKey = entityClass.getName();
+                    if (returnsMany) {
+                        cacheKey = cacheKey + listCacheKeySign;
+                    } else if (returnCount) {
+                        cacheKey = cacheKey + countCacheKeySign;
+                    } else {
+                        continue;
+                    }
+                    // else if (methodEnum == CacheMethodEnum.getCount) {
+                    // cacheKey = cacheKey + queryCountCacheKeySign;
+                    // }
+
+                    LinkedHashMap<Integer, String> fieldNames = getParamsFields(method);
+                    for (int i : fieldNames.keySet()) {
+                        String fieldName = fieldNames.get(i);
+                        cacheKey = cacheKey + generateCacheKey(fieldName);
+                    }
+
+                    if (!unformatCacheKeyList.contains(cacheKey))
+                        unformatCacheKeyList.add(cacheKey);
+
+                    logger.info(this.mapperInterface + "class:{},method:{},cacheKey:{}",
+                            new Object[] { entityClass.getName(), method.getName(), cacheKey });
                 }
-                // else if (methodEnum == CacheMethodEnum.getCount) {
-                // cacheKey = cacheKey + queryCountCacheKeySign;
-                // }
-
-                LinkedHashMap<Integer, String> fieldNames = getParamsFields(method);
-                for (int i : fieldNames.keySet()) {
-                    String fieldName = fieldNames.get(i);
-                    cacheKey = cacheKey + generateCacheKey(fieldName);
-                }
-
-                if (!unformatCacheKeyList.contains(cacheKey))
-                    unformatCacheKeyList.add(cacheKey);
-
-                logger.info(this.mapperInterface + "class:{},method:{},cacheKey:{}",
-                        new Object[] { entityClass.getName(), method.getName(), cacheKey });
+                unformatCacheKeys.put(this.entityClass, unformatCacheKeyList);
             }
-            unformatCacheKeys.put(this.entityClass, unformatCacheKeyList);
         }
-
     }
 
     private String generateCacheKey(String name) {
@@ -516,8 +530,8 @@ public class MethodSignature {
     private String getParamNameFromAnnotation(Method method, int i, String paramName) {
         final Object[] paramAnnos = method.getParameterAnnotations()[i];
         for (Object paramAnno : paramAnnos) {
-            if (paramAnno instanceof Param) {
-                paramName = ((Param) paramAnno).value();
+            if (paramAnno instanceof MethodParam) {
+                paramName = ((MethodParam) paramAnno).value();
             }
         }
         return paramName;
@@ -528,7 +542,7 @@ public class MethodSignature {
         final Object[][] paramAnnos = method.getParameterAnnotations();
         for (Object[] paramAnno : paramAnnos) {
             for (Object aParamAnno : paramAnno) {
-                if (aParamAnno instanceof Param) {
+                if (aParamAnno instanceof MethodParam) {
                     hasNamedParams = true;
                     break;
                 }
@@ -627,10 +641,6 @@ public class MethodSignature {
 
     public boolean isParamsObject() {
         return paramsObject;
-    }
-
-    public boolean isParamsMany() {
-        return paramsMany;
     }
 
     public String getListFormat() {
