@@ -4,13 +4,13 @@ import java.util.List;
 
 import org.apache.ibatis.mapping.SqlCommandType;
 
-import com.pinoo.core.mybatis.annotation.method.Method;
-import com.pinoo.core.mybatis.annotation.method.MethodParam;
-import com.pinoo.core.mybatis.annotation.method.Page;
-import com.pinoo.core.mybatis.annotation.method.PageCursor;
-import com.pinoo.core.mybatis.annotation.method.PageSize;
-import com.pinoo.core.mybatis.annotation.model.ModelInfo;
-import com.pinoo.core.mybatis.dao.IBaseDao;
+import com.pinoo.storage.mybatis.annotation.method.Method;
+import com.pinoo.storage.mybatis.annotation.method.MethodParam;
+import com.pinoo.storage.mybatis.annotation.method.Page;
+import com.pinoo.storage.mybatis.annotation.method.PageCursor;
+import com.pinoo.storage.mybatis.annotation.method.PageSize;
+import com.pinoo.storage.mybatis.annotation.model.ModelInfo;
+import com.pinoo.storage.mybatis.dao.IBaseDao;
 import com.pinoo.demo.model.Message;
 
 @ModelInfo(entityClass = Message.class, tableName = "message")

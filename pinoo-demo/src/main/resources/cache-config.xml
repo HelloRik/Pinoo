@@ -6,7 +6,7 @@
 
 
 	<!-- cache wrapper -->
-	<bean id="redisCache" class="com.pinoo.core.mybatis.cache.RedisCache">
+	<bean id="redisCache" class="com.pinoo.storage.mybatis.cache.RedisCache">
 		<property name="templet" ref="redisTemplate"/>
 		<property name="stringRedisTemplate" ref="stringRedisTemplate"/>
 	</bean>

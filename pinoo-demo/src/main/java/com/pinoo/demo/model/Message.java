@@ -2,9 +2,9 @@ package com.pinoo.demo.model;
 
 import java.io.Serializable;
 
-import com.pinoo.core.mybatis.annotation.model.Column;
-import com.pinoo.core.mybatis.annotation.model.PrimaryKey;
-import com.pinoo.core.mybatis.annotation.model.Sort;
+import com.pinoo.storage.mybatis.annotation.model.Column;
+import com.pinoo.storage.mybatis.annotation.model.PrimaryKey;
+import com.pinoo.storage.mybatis.annotation.model.Sort;
 
 public class Message implements Serializable {
 

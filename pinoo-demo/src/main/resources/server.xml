@@ -37,8 +37,7 @@
 	</bean>
 	
 	<!-- SESSION FACEORY -->
-	<bean id="sqlSessionFactory" class="com.pinoo.core.mybatis.SqlSessionFactoryBean">
-		<!-- 	<property name="mapperLocations" value="classpath:sql-mapper/*.xml" /> -->
+	<bean id="sqlSessionFactory" class="com.pinoo.storage.mybatis.SqlSessionFactoryBean">
 		<property name="dataSource" ref="datasource" />
 		<property name="configLocation" value="classpath:mybatis-plugin-config.xml" />
 		<property name="cache" ref="redisCache" />

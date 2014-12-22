@@ -3,23 +3,24 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.pinoo</groupId>
-  <artifactId>pinoo</artifactId>
+  <artifactId>pinoo-mongodb</artifactId>
   <version>1.0.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
+  <packaging>jar</packaging>
 
-  <name>pinoo</name>
+  <name>pinoo-mongodb</name>
   <url>http://maven.apache.org</url>
-  
-  <modules>
-  		<module>pinoo-common</module>
-  		<module>pinoo-core</module>
-  		<module>pinoo-mybatis</module>
-  		<module>pinoo-mongodb</module>
-  		<module>pinoo-demo</module>
-  </modules>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
+  <dependencies>
+  	
+  	<dependency>
+    	<groupId>com.pinoo</groupId>
+    	<artifactId>pinoo-common</artifactId>
+    	<version>1.0.0-SNAPSHOT</version>
+     </dependency>
+     
+  </dependencies>
 </project>
