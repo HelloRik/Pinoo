@@ -2,6 +2,10 @@ package com.pinoo.demo;
 
 import java.util.List;
 
+import org.junit.After;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -11,58 +15,76 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import com.pinoo.demo.dao.MessageDao;
 import com.pinoo.demo.model.Message;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class StartServer {
 
-    static ClassPathXmlApplicationContext context;
+    private static Logger logger = LoggerFactory.getLogger(StartServer.class);
 
-    public static void main(String[] args) throws Exception {
-        Logger logger = LoggerFactory.getLogger(StartServer.class);
-        context = new ClassPathXmlApplicationContext("server.xml");
-        context.start();
+    private static ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("server.xml");
 
-        logger.info("=================================");
-        logger.info("==== start server success!!! ====");
-        logger.info("=================================");
+    private RedisTemplate templet = context.getBean("redisTemplate", RedisTemplate.class);
 
-        RedisTemplate templet = context.getBean("redisTemplate", RedisTemplate.class);
-        StringRedisTemplate stringRedisTemplet = context.getBean(StringRedisTemplate.class);
+    private StringRedisTemplate stringRedisTemplet = context.getBean(StringRedisTemplate.class);
 
+    private MessageDao dao = context.getBean(MessageDao.class);
+
+    // @Test
+    public void delectCache() {
+
+        System.out.println(stringRedisTemplet.boundValueOps("com.pinoo.demo.model.Message_count__type_2").get());
+        System.out.println(stringRedisTemplet.boundValueOps("com.pinoo.demo.model.Message_count__type_1").get());
         // stringRedisTemplet.delete("com.pinoo.demo.model.Message_count__type_1");
         // templet.delete("com.pinoo.demo.model.Message_object_3");
         // templet.delete("com.pinoo.demo.model.Message_object_4");
         // templet.delete("com.pinoo.demo.model.Message_object_5");
         // templet.delete("com.pinoo.demo.model.Message_object_6");
+    }
 
-        MessageDao dao = context.getBean(MessageDao.class);
-        //
+    // @Test
+    public void insert() {
         Message msg = new Message();
         msg.setTitle("test");
-        msg.setContent("1234444");
+        msg.setContent("text !!!!!");
         msg.setAddTime(System.currentTimeMillis());
         msg.setType(2);
         msg.setStatus(2);
 
-        // dao.insert(msg);
+        dao.insert(msg);
+    }
 
-        msg = dao.load(30);
+    // @Test
+    public void load() {
+        Message msg = dao.load(30);
         System.out.println(msg);
-        msg.setType(1);
+    }
+
+    public void loadCount() {
+        System.out.println(dao.getMsgCountByType(1));
+    }
+
+    @Test
+    public void loadAllList() {
+        List<Message> msgs = dao.getAllMsgList(2, 4);
+        System.out.println(msgs);
+    }
+
+    // @Test
+    public void loadList() {
+        List<Message> msgs = dao.getMsgList(1, 2, -1, 10);
+        System.out.println(msgs);
+    }
+
+    // @Test
+    public void update() {
+        Message msg = dao.load(35);
+        msg.setType(2);
         msg.setStatus(1);
         dao.update(msg);
-        //
-        // msg = dao.load(30);
-        // System.out.println(msg);
-        //
-        List<Message> msgs = dao.getMsgList(2, 1, -1, 10);
-        System.out.println(msgs);
-        //
-        msgs = dao.getMsgList(2, 2, -1, 10);
-        System.out.println(msgs);
-
-        msgs = dao.getMsgList(1, 1, -1, 10);
-        System.out.println(msgs);
-
-        System.out.println(dao.getMsgCountByType(1));
-        System.out.println(dao.getMsgCountByType(2));
     }
+
+    @After
+    public void after() {
+        System.out.println("==================================================================");
+    }
+
 }

@@ -49,8 +49,6 @@ public class MapperMethod {
     }
 
     public Object execute(SqlSession sqlSession, Object[] args) throws Exception {
-        String cacheKey = method.convertArgsToCacheKey(args);
-        System.out.println("@@@@@@cache key :" + cacheKey);
 
         Object result;
         if (SqlCommandType.INSERT == command.getType()) {
@@ -90,6 +88,8 @@ public class MapperMethod {
                 removeToList(oldModel);
             }
         } else if (SqlCommandType.SELECT == command.getType()) {
+            String cacheKey = method.convertArgsToCacheKey(args);
+            System.out.println("@@@@@@cache key :" + cacheKey);
             if (method.returnsVoid() && method.hasResultHandler()) {
                 executeWithResultHandler(sqlSession, args);
                 result = null;

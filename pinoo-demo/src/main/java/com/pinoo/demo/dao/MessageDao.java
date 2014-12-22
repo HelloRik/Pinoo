@@ -17,6 +17,9 @@ import com.pinoo.demo.model.Message;
 public interface MessageDao extends IBaseDao<Message> {
 
     @Method(sqlCommandType = SqlCommandType.SELECT)
+    public List<Message> getAllMsgList(@Page int page, @PageSize int pageSize);
+
+    @Method(sqlCommandType = SqlCommandType.SELECT)
     public List<Message> getMsgList(@MethodParam("status") int status, @MethodParam("type") int type,
             @PageCursor long cursor, @PageSize int pageSize);
 
@@ -33,4 +36,5 @@ public interface MessageDao extends IBaseDao<Message> {
 
     @Method(sqlCommandType = SqlCommandType.SELECT)
     public int getMsgCountByType(@MethodParam("type") int type);
+
 }

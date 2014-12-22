@@ -23,18 +23,11 @@ public class RedisCache implements ICache, InitializingBean {
 
     protected StringRedisTemplate stringRedisTemplate;
 
-    // protected RedisTemplate objectTemplet;
-
-    // protected ValueOperations<String, T> objectOps;
-
-    protected ValueOperations objectOps;
+    protected ValueOperations<String, Object> objectOps;
 
     protected ValueOperations<String, String> countOps;
 
-    protected ZSetOperations<String, Long> zsetOps;
-
-    // protected ZSetOperations<String, ID> queryZsetOps;
-    protected ZSetOperations queryZsetOps;
+    protected ZSetOperations<String, Long> queryZsetOps;
 
     protected TimeUnit timeUnit;
 
@@ -45,7 +38,6 @@ public class RedisCache implements ICache, InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         this.countOps = this.stringRedisTemplate.opsForValue();
-        this.zsetOps = this.templet.opsForZSet();
         this.objectOps = this.templet.opsForValue();
         this.queryZsetOps = this.templet.opsForZSet();
 
@@ -62,7 +54,6 @@ public class RedisCache implements ICache, InitializingBean {
     protected void saveLog(String tag, String methodName, String content, Object... objs) {
         try {
             // if (this.logger.isDebugEnabled()) {
-
             this.logger.info("【" + tag + "】" + "【" + methodName + "】" + "【" + content + "】", objs);
             // }
         } catch (Exception e) {
@@ -132,7 +123,7 @@ public class RedisCache implements ICache, InitializingBean {
         if (objects != null && objects.size() > 0) {
             for (T o : objects) {
                 long score = (Long) sortInfo.getReadMethod().invoke(o);
-                queryZsetOps.add(listCacheKey, primaryInfo.getReadMethod().invoke(o), score);
+                queryZsetOps.add(listCacheKey, (Long) primaryInfo.getReadMethod().invoke(o), score);
             }
             this.templet.expire(listCacheKey, this.timeout, this.timeUnit);
         }
@@ -159,15 +150,16 @@ public class RedisCache implements ICache, InitializingBean {
     public void addToList(String listCacheKey, Object obj, FieldInfo primaryInfo, FieldInfo sortInfo) throws Exception {
         if (listCacheKey != null && this.templet.hasKey(listCacheKey)) {
             long score = (Long) sortInfo.getReadMethod().invoke(obj);
-            logger.info("addToList cache :{},sort:{},model:{}", new Object[] { listCacheKey, score, obj });
-            queryZsetOps.add(listCacheKey, primaryInfo.getReadMethod().invoke(obj), score);
+            saveLog(this.loggerTypeTag, "addToList", "add cache :{},sort:{},model:{}", new Object[] { listCacheKey,
+                    score, obj });
+            queryZsetOps.add(listCacheKey, (Long) primaryInfo.getReadMethod().invoke(obj), score);
         }
     }
 
     @Override
     public void removeToList(String listCacheKey, Object id) throws Exception {
         if (listCacheKey != null && this.templet.hasKey(listCacheKey)) {
-            logger.info("removeToList cache :{},model:{}", listCacheKey, id);
+            saveLog(this.loggerTypeTag, "removeToList", "remove cache :{},id:{}", new Object[] { listCacheKey, id });
             this.queryZsetOps.remove(listCacheKey, id);
         }
     }
