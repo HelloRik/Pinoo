@@ -8,7 +8,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 	
 	<import resource="datasource.xml"/>
-	<!-- <import resource="mongo.xml"/> -->
+	<import resource="mongo.xml"/>
     <!-- --><import resource="cache-config.xml"/> 
     <!-- --><import resource="duboo.xml"/> 
     
@@ -16,7 +16,7 @@
     
     <!-- 注解支持，指定扫描路径-->
     <context:annotation-config/>
-    <context:component-scan base-package="com.casey"/>
+    <context:component-scan base-package="com.pinoo"/>
     <bean class="org.springframework.context.annotation.CommonAnnotationBeanPostProcessor"/>
     
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"

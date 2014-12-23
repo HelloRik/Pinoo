@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-import com.pinoo.common.annotation.model.FieldInfo;
+import com.pinoo.beans.FieldInfo;
 
 public class TransformUtil {
 

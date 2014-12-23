@@ -1,4 +1,4 @@
-package com.pinoo.common.annotation.model;
+package com.pinoo.storage.mongodb.annotation.model;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -16,6 +16,7 @@ public class FieldInfo {
     private Method readMethod;
 
     public FieldInfo(Field field, String name, String dbName, Method writeMethod, Method readMethod) {
+        super();
         this.field = field;
         this.name = name;
         this.dbName = dbName;
@@ -80,6 +81,11 @@ public class FieldInfo {
         return this.getName().hashCode();
     }
 
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
         return "FieldInfo [name=" + name + ", dbName=" + dbName + "]";

@@ -28,7 +28,7 @@ import org.apache.ibatis.session.RowBounds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.pinoo.common.annotation.model.FieldInfo;
+import com.pinoo.beans.FieldInfo;
 import com.pinoo.common.utils.AnnotationScaner;
 import com.pinoo.common.utils.ReflectionUtil;
 import com.pinoo.storage.mybatis.annotation.method.MethodParam;

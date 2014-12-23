@@ -11,14 +11,13 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.ibatis.mapping.SqlCommandType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.pinoo.common.annotation.model.FieldInfo;
+import com.pinoo.beans.FieldInfo;
 import com.pinoo.common.utils.AnnotationScaner;
 import com.pinoo.common.utils.ReflectionUtil;
+import com.pinoo.mapping.MethodType;
 import com.pinoo.storage.mybatis.annotation.method.Method;
 import com.pinoo.storage.mybatis.annotation.method.MethodParam;
 import com.pinoo.storage.mybatis.binding.MethodSignature;
@@ -65,8 +64,8 @@ public class SqlMapperXmlBuilder {
             String methodName = method.getName();
             Method methodAnn = method.getAnnotation(Method.class);
             if (methodAnn != null) {
-                SqlCommandType sqlCommandType = methodAnn.sqlCommandType();
-                switch (sqlCommandType) {
+                MethodType methodType = methodAnn.type();
+                switch (methodType) {
                 case SELECT:
                     buildSelectCommand(document, root, method.getName(), methodAnn, method);
                     break;
@@ -150,17 +149,20 @@ public class SqlMapperXmlBuilder {
         Element selectCommand = createElement(document, root, "select");
         selectCommand.setAttribute("id", id);
 
-        if (StringUtils.isNotEmpty(methodAnn.parameterMap())) {
-            selectCommand.setAttribute("parameterMap", methodAnn.parameterMap());
-        } else if (StringUtils.isNotEmpty(methodAnn.parameterType())) {
-            selectCommand.setAttribute("parameterType", methodAnn.parameterType());
-        }
+        // if (StringUtils.isNotEmpty(methodAnn.parameterMap())) {
+        // selectCommand.setAttribute("parameterMap", methodAnn.parameterMap());
+        // } else if (StringUtils.isNotEmpty(methodAnn.parameterType())) {
+        // selectCommand.setAttribute("parameterType",
+        // methodAnn.parameterType());
+        // }
 
-        if (StringUtils.isNotEmpty(methodAnn.resultMap())) {
-            selectCommand.setAttribute("resultMap", methodAnn.resultMap());
-        } else if (StringUtils.isNotEmpty(methodAnn.resultType())) {
-            selectCommand.setAttribute("resultType", methodAnn.resultType());
-        } else if (isReturnCount) {
+        // if (StringUtils.isNotEmpty(methodAnn.resultMap())) {
+        // selectCommand.setAttribute("resultMap", methodAnn.resultMap());
+        // } else if (StringUtils.isNotEmpty(methodAnn.resultType())) {
+        // selectCommand.setAttribute("resultType", methodAnn.resultType());
+        // } else
+
+        if (isReturnCount) {
             if (method.getReturnType().equals(Long.class))
                 selectCommand.setAttribute("resultType", "Long");
             else
@@ -170,9 +172,7 @@ public class SqlMapperXmlBuilder {
         }
 
         StringBuffer sb = new StringBuffer();
-        if (StringUtils.isNotEmpty(methodAnn.sql())) {
-            sb.append(methodAnn.sql());
-        } else if (isReturnCount) {
+        if (isReturnCount) {
             sb.append("select count(*) from " + this.methodSignature.getTableName());
         } else {
             sb.append("select ");

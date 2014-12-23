@@ -1,16 +1,16 @@
-package com.pinoo.storage.mybatis.annotation.method;
+package com.pinoo.storage.mongodb.annotation.model;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.pinoo.mapping.MethodType;
-
+/**
+ * 
+ * 标识是一个排序键
+ */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Method {
-
-    MethodType type();
+@Target(ElementType.FIELD)
+public @interface SortKey {
 
 }

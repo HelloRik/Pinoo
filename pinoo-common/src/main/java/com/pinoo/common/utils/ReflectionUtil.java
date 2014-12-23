@@ -168,6 +168,29 @@ public class ReflectionUtil {
     }
 
     /**
+     * 获取类的泛型的class
+     * 
+     * @param c
+     * @param index
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+    public static Class getGenericType(Class c, int index) {
+        java.lang.reflect.Type genType = c.getGenericSuperclass();
+        if (!(genType instanceof ParameterizedType)) {
+            return Object.class;
+        }
+        java.lang.reflect.Type[] params = ((ParameterizedType) genType).getActualTypeArguments();
+        if (index >= params.length || index < 0) {
+            throw new RuntimeException("Index outof bounds");
+        }
+        if (!(params[index] instanceof Class)) {
+            return Object.class;
+        }
+        return (Class) params[index];
+    }
+
+    /**
      * 将反射时的checked exception转换为unchecked exception.
      */
     public static IllegalArgumentException convertToUncheckedException(Exception e) {

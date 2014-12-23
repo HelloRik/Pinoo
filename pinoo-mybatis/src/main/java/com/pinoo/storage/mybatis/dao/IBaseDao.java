@@ -1,7 +1,6 @@
 package com.pinoo.storage.mybatis.dao;
 
-import org.apache.ibatis.mapping.SqlCommandType;
-
+import com.pinoo.mapping.MethodType;
 import com.pinoo.storage.mybatis.annotation.method.Method;
 import com.pinoo.storage.mybatis.annotation.method.MethodParam;
 
@@ -16,16 +15,16 @@ import com.pinoo.storage.mybatis.annotation.method.MethodParam;
  */
 public interface IBaseDao<T> {
 
-    @Method(sqlCommandType = SqlCommandType.SELECT, parameterType = "Long")
+    @Method(type = MethodType.SELECT)
     public T load(@MethodParam("id") long id);
 
-    @Method(sqlCommandType = SqlCommandType.INSERT)
+    @Method(type = MethodType.INSERT)
     public int insert(T model);
 
-    @Method(sqlCommandType = SqlCommandType.UPDATE)
+    @Method(type = MethodType.UPDATE)
     public int update(T model);
 
-    @Method(sqlCommandType = SqlCommandType.DELETE)
+    @Method(type = MethodType.DELETE)
     public int delete(long id);
 
 }

@@ -2,7 +2,7 @@ package com.pinoo.core.dao;
 
 import java.util.List;
 
-import com.pinoo.common.annotation.model.FieldInfo;
+import com.pinoo.beans.FieldInfo;
 import com.pinoo.common.annotation.model.IdentityType;
 import com.pinoo.common.annotation.model.ModelInfo;
 

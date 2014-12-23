@@ -2,7 +2,7 @@ package com.pinoo.storage.mybatis.cache;
 
 import java.util.List;
 
-import com.pinoo.common.annotation.model.FieldInfo;
+import com.pinoo.beans.FieldInfo;
 
 public interface ICache {
 

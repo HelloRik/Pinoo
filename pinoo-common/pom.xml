@@ -52,6 +52,14 @@
 		 </dependency>
 		  -->
 		 
+		 <!-- cglib -->
+		 <dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib</artifactId>
+			<version>2.2.2</version>
+			<!--<version>2.2.2</version> -->
+		 </dependency>
+		 
 		 <!--  -->
 		  <dependency>
 	    	<groupId>org.apache.zookeeper</groupId>
