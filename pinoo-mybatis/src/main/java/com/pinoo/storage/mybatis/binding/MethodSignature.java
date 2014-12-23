@@ -28,13 +28,13 @@ import org.apache.ibatis.session.RowBounds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.pinoo.annotation.method.MethodParam;
+import com.pinoo.annotation.method.Page;
+import com.pinoo.annotation.method.PageCursor;
+import com.pinoo.annotation.method.PageSize;
 import com.pinoo.beans.FieldInfo;
 import com.pinoo.common.utils.AnnotationScaner;
 import com.pinoo.common.utils.ReflectionUtil;
-import com.pinoo.storage.mybatis.annotation.method.MethodParam;
-import com.pinoo.storage.mybatis.annotation.method.Page;
-import com.pinoo.storage.mybatis.annotation.method.PageCursor;
-import com.pinoo.storage.mybatis.annotation.method.PageSize;
 import com.pinoo.storage.mybatis.annotation.model.Column;
 import com.pinoo.storage.mybatis.annotation.model.ModelInfo;
 import com.pinoo.storage.mybatis.annotation.model.PrimaryKey;
@@ -153,7 +153,7 @@ public class MethodSignature {
         this.configuration = configuration;
         this.returnType = method.getReturnType();
         this.returnsVoid = void.class.equals(this.returnType);
-        this.returnsMany = (configuration.getObjectFactory().isCollection(this.returnType) || this.returnType.isArray());
+        this.returnsMany = ReflectionUtil.isMethodReturnMany(method);
         this.returnsCount = ReflectionUtil.isMethodReturnCount(method);
         this.mapKey = getMapKey(method);
         this.returnsMap = (this.mapKey != null);

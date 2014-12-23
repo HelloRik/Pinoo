@@ -8,23 +8,29 @@ import java.util.List;
 import java.util.Map;
 
 import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
-import com.pinoo.storage.mongodb.annotation.dao.CacheDaoMethod;
-import com.pinoo.storage.mongodb.annotation.dao.CacheMethodEnum;
+import com.pinoo.annotation.method.MethodProxy;
 import com.pinoo.storage.mongodb.dao.RedisCacheDao;
 
+/**
+ * 缓存方法代理
+ * 
+ * @Filename: CacheCommonMethodInterceptor.java
+ * @Version: 1.0
+ * @Author: jujun
+ * @Email: hello_rik@sina.com
+ * 
+ */
 public class CacheCommonMethodInterceptor implements MethodInterceptor {
 
     static Logger logger = LoggerFactory.getLogger(CacheCommonMethodInterceptor.class);
 
-    private String formatCacheKey(String cacheKey, Object object, Method method, Object[] args) {
-        RedisCacheDao<?, ?> dao = (RedisCacheDao<?, ?>) object;
+    private String formatCacheKey(String cacheKey, RedisCacheDao<?, ?> dao, Method method, Object[] args) {
         Map<Integer, String> params = dao.getParamsIndexMap().get(method);
         if (params != null) {
             for (int i : params.keySet()) {
@@ -36,16 +42,14 @@ public class CacheCommonMethodInterceptor implements MethodInterceptor {
         return cacheKey;
     }
 
-    private String getCacheKey(Object object, Method method, Object[] args) {
-        RedisCacheDao<?, ?> dao = (RedisCacheDao<?, ?>) object;
+    private String getCacheKey(RedisCacheDao<?, ?> dao, Method method, Object[] args) {
         Map<Method, String> map = dao.getUnformatCacheKeys();
         String cacheKey = map.get(method);
-        cacheKey = this.formatCacheKey(cacheKey, object, method, args);
+        cacheKey = this.formatCacheKey(cacheKey, dao, method, args);
         return cacheKey;
     }
 
-    private Query getQuery(Object object, Method method, Object[] args) throws Throwable {
-        RedisCacheDao<?, ?> dao = (RedisCacheDao<?, ?>) object;
+    private Query getQuery(RedisCacheDao<?, ?> dao, Method method, Object[] args) throws Throwable {
         Query query = new Query();
 
         int cursorIndex = dao.getCursorIndex().get(method) != null ? dao.getCursorIndex().get(method) : -1;
@@ -63,8 +67,7 @@ public class CacheCommonMethodInterceptor implements MethodInterceptor {
         return query;
     }
 
-    private long getCursor(Object object, Method method, Object[] args) {
-        RedisCacheDao<?, ?> dao = (RedisCacheDao<?, ?>) object;
+    private long getCursor(RedisCacheDao<?, ?> dao, Method method, Object[] args) {
         Integer cursor_index = dao.getCursorIndex().get(method);
         if (cursor_index != null) {
             return (Long) args[cursor_index];
@@ -72,27 +75,24 @@ public class CacheCommonMethodInterceptor implements MethodInterceptor {
         return -1;
     }
 
-    private int getPage(Object object, Method method, Object[] args) {
-        RedisCacheDao<?, ?> dao = (RedisCacheDao<?, ?>) object;
+    private int getPage(RedisCacheDao<?, ?> dao, Method method, Object[] args) {
         Integer page_index = dao.getPageIndex().get(method);
         if (page_index != null) {
             return (Integer) args[page_index];
         }
-        return 1;
+        return -1;
     }
 
-    private int getSize(Object object, Method method, Object[] args) {
-        RedisCacheDao<?, ?> dao = (RedisCacheDao<?, ?>) object;
+    private int getSize(RedisCacheDao<?, ?> dao, Method method, Object[] args) {
         Integer size_index = dao.getSizeIndex().get(method);
         if (size_index != null) {
             return (Integer) args[size_index];
         }
-        return 10;
+        return 0;
     }
 
-    private List<Object> getparams(Object object, Method method, Object[] args) {
+    private List<Object> getParams(RedisCacheDao<?, ?> dao, Method method, Object[] args) {
         List<Object> result = new ArrayList<Object>();
-        RedisCacheDao<?, ?> dao = (RedisCacheDao<?, ?>) object;
         Map<Integer, String> params = dao.getParamsIndexMap().get(method);
         for (int i : params.keySet()) {
             result.add(args[i]);
@@ -101,8 +101,8 @@ public class CacheCommonMethodInterceptor implements MethodInterceptor {
 
     }
 
-    private Object decideListReturnResult(Object object, Method method, Object[] args, List ids) throws Exception {
-        RedisCacheDao<?, ?> dao = (RedisCacheDao<?, ?>) object;
+    private Object decideListReturnResult(RedisCacheDao<?, ?> dao, Method method, Object[] args, List ids)
+            throws Exception {
         Type returnType = method.getGenericReturnType();
         if (returnType instanceof ParameterizedType) {
             Type[] types = ((ParameterizedType) returnType).getActualTypeArguments();
@@ -113,85 +113,42 @@ public class CacheCommonMethodInterceptor implements MethodInterceptor {
         return ids;
     }
 
-    private Object handleCacheGetList(Object object, Method method, Object[] args) throws Throwable {
-        RedisCacheDao<?, ?> dao = (RedisCacheDao<?, ?>) object;
-        String listCacheKey = this.getCacheKey(object, method, args);
-        int size = getSize(object, method, args);
-        long cursor = getCursor(object, method, args);
-        // int page = getPage(object, method, args);
-        int page = 0;
-
-        Query listQuery = getQuery(object, method, args);
+    private Object handleGetList(RedisCacheDao<?, ?> dao, Method method, Object[] args) throws Throwable {
+        String listCacheKey = this.getCacheKey(dao, method, args);
+        int size = getSize(dao, method, args);
+        long cursor = getCursor(dao, method, args);
+        int page = getPage(dao, method, args);
 
         logger.debug(method.getDeclaringClass().getSimpleName()
                 + ",【handleCacheGetList】listCacheKey:{},cursor:{},page:{},size:{}", new Object[] { listCacheKey,
                 cursor, page, size });
 
+        Query listQuery = getQuery(dao, method, args);
         List<?> ids = dao._queryForList(listCacheKey, listQuery, cursor, page, size);
-        return decideListReturnResult(object, method, args, ids);
+        return decideListReturnResult(dao, method, args, ids);
     }
 
-    private Object handleCacheGetCount(Object object, Method method, Object[] args) throws Throwable {
-        RedisCacheDao<?, ?> dao = (RedisCacheDao<?, ?>) object;
-        String countCacheKey = this.getCacheKey(object, method, args);
-
-        Query countQuery = getQuery(object, method, args);
+    private Object handleCacheGetCount(RedisCacheDao<?, ?> dao, Method method, Object[] args) throws Throwable {
+        String countCacheKey = this.getCacheKey(dao, method, args);
+        Query countQuery = getQuery(dao, method, args);
         logger.debug(method.getDeclaringClass().getSimpleName() + ",countCacheKey:{},args:{}", new Object[] {
                 countCacheKey, args });
         return dao._queryForListCount(countCacheKey, countQuery);
     }
 
-    private Object handleGetPageList(Object object, Method method, Object[] args) throws Throwable {
-        RedisCacheDao<?, ?> dao = (RedisCacheDao<?, ?>) object;
-
-        String listCacheKey = this.getCacheKey(object, method, args);
-        int size = getSize(object, method, args);
-        long cursor = -1;
-        int page = getPage(object, method, args);
-
-        Query listQuery = getQuery(object, method, args);
-
-        logger.debug(method.getDeclaringClass().getSimpleName()
-                + ",【handleGetPageList】listCacheKey:{},cursor:{},page:{},size:{}", new Object[] { listCacheKey, cursor,
-                page, size });
-
-        List<?> ids = dao._queryForList(listCacheKey, listQuery, cursor, page, size);
-        return decideListReturnResult(object, method, args, ids);
-    }
-
-    private Object handleGetAllList(Object object, Method method, Object[] args) throws Throwable {
-        RedisCacheDao<?, ?> dao = (RedisCacheDao<?, ?>) object;
-        String listCacheKey = this.getCacheKey(object, method, args);
-        int size = Integer.MAX_VALUE;
-        long cursor = -1;
-        int page = 1;
-        Query listQuery = getQuery(object, method, args);
-        logger.debug(method.getDeclaringClass().getSimpleName()
-                + ",【handleGetAllList】listCacheKey:{},cursor:{},page:{},size:{}", new Object[] { listCacheKey, cursor,
-                page, size });
-        List<?> ids = dao._queryForList(listCacheKey, listQuery, cursor, page, size);
-        return decideListReturnResult(object, method, args, ids);
-    }
-
     @Override
-    public Object intercept(Object object, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
-        CacheDaoMethod cacheDaoMethod = method.getAnnotation(CacheDaoMethod.class);
+    public Object intercept(Object object, Method method, Object[] args, net.sf.cglib.proxy.MethodProxy methodProxy)
+            throws Throwable {
+        MethodProxy methodAnn = method.getAnnotation(MethodProxy.class);
+        if (methodAnn != null) {
+            RedisCacheDao<?, ?> dao = (RedisCacheDao<?, ?>) object;
+            boolean isReturnMany = dao.isMethodReturnMany(method);
+            boolean isReturnCount = dao.isMethodReturnCount(method);
 
-        if (cacheDaoMethod != null) {
-            CacheMethodEnum methodEnum = cacheDaoMethod.methodEnum();
-            // if (methodEnum != null && args != null) {
-            // logger.debug(method.getDeclaringClass().getSimpleName() + ","
-            // + method.getName() + "==============args:"
-            // + Arrays.asList(args));
-            // }
-            if (methodEnum == CacheMethodEnum.getList) {
-                return this.handleCacheGetList(object, method, args);
-            } else if (methodEnum == CacheMethodEnum.getCount) {
-                return this.handleCacheGetCount(object, method, args);
-            } else if (methodEnum == CacheMethodEnum.getPageList) {
-                return this.handleGetPageList(object, method, args);
-            } else if (methodEnum == CacheMethodEnum.getAllList) {
-                return this.handleGetAllList(object, method, args);
+            if (isReturnMany) {
+                return this.handleGetList(dao, method, args);
+            } else if (isReturnCount) {
+                return this.handleCacheGetCount(dao, method, args);
             } else {
                 return methodProxy.invokeSuper(object, args);
             }

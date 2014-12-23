@@ -1,8 +1,8 @@
 package com.pinoo.storage.mybatis.dao;
 
+import com.pinoo.annotation.method.MethodParam;
+import com.pinoo.annotation.method.MethodProxy;
 import com.pinoo.mapping.MethodType;
-import com.pinoo.storage.mybatis.annotation.method.Method;
-import com.pinoo.storage.mybatis.annotation.method.MethodParam;
 
 /**
  * 所有DAO操作的基类
@@ -15,16 +15,16 @@ import com.pinoo.storage.mybatis.annotation.method.MethodParam;
  */
 public interface IBaseDao<T> {
 
-    @Method(type = MethodType.SELECT)
+    @MethodProxy(type = MethodType.SELECT)
     public T load(@MethodParam("id") long id);
 
-    @Method(type = MethodType.INSERT)
+    @MethodProxy(type = MethodType.INSERT)
     public int insert(T model);
 
-    @Method(type = MethodType.UPDATE)
+    @MethodProxy(type = MethodType.UPDATE)
     public int update(T model);
 
-    @Method(type = MethodType.DELETE)
+    @MethodProxy(type = MethodType.DELETE)
     public int delete(long id);
 
 }

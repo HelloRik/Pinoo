@@ -14,12 +14,12 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.pinoo.annotation.method.MethodParam;
+import com.pinoo.annotation.method.MethodProxy;
 import com.pinoo.beans.FieldInfo;
 import com.pinoo.common.utils.AnnotationScaner;
 import com.pinoo.common.utils.ReflectionUtil;
 import com.pinoo.mapping.MethodType;
-import com.pinoo.storage.mybatis.annotation.method.Method;
-import com.pinoo.storage.mybatis.annotation.method.MethodParam;
 import com.pinoo.storage.mybatis.binding.MethodSignature;
 
 public class SqlMapperXmlBuilder {
@@ -62,7 +62,7 @@ public class SqlMapperXmlBuilder {
     private void buildMethods(Document document, Element root) throws Exception {
         for (java.lang.reflect.Method method : this.methodSignature.getMapperInterface().getMethods()) {
             String methodName = method.getName();
-            Method methodAnn = method.getAnnotation(Method.class);
+            MethodProxy methodAnn = method.getAnnotation(MethodProxy.class);
             if (methodAnn != null) {
                 MethodType methodType = methodAnn.type();
                 switch (methodType) {
@@ -141,7 +141,7 @@ public class SqlMapperXmlBuilder {
         insertCommand.setTextContent(sb.toString());
     }
 
-    private void buildSelectCommand(Document document, Element root, String id, Method methodAnn,
+    private void buildSelectCommand(Document document, Element root, String id, MethodProxy methodAnn,
             java.lang.reflect.Method method) throws Exception {
 
         boolean isReturnCount = ReflectionUtil.isMethodReturnCount(method);
@@ -197,7 +197,7 @@ public class SqlMapperXmlBuilder {
                     } else {
                         sb.append(" and ");
                     }
-                    sb.append("`" + info.getDbName() + "`" + p.sign() + "#{" + paramName + "}");
+                    sb.append("`" + info.getDbName() + "` = #{" + paramName + "}");
                     continue;
                 }
             }

@@ -5,6 +5,15 @@ import java.lang.reflect.Modifier;
 
 import net.sf.cglib.proxy.Enhancer;
 
+/**
+ * 通过CGLIB对类做代理
+ * 
+ * @Filename: MethodProxy.java
+ * @Version: 1.0
+ * @Author: jujun
+ * @Email: hello_rik@sina.com
+ * 
+ */
 public class MethodProxy {
 
     public void copy(Object target, Object source) throws Exception {

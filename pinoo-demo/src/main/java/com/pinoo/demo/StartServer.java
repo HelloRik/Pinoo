@@ -13,7 +13,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import com.pinoo.demo.dao.MessageDao;
-import com.pinoo.demo.dao.SessionDao;
 import com.pinoo.demo.model.Message;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -29,8 +28,6 @@ public class StartServer {
 
     private MessageDao dao = context.getBean("messageDao", MessageDao.class);
 
-    private SessionDao sessionDao = context.getBean(SessionDao.class);
-
     // @Test
     public void delectCache() {
 
@@ -41,11 +38,6 @@ public class StartServer {
         // templet.delete("com.pinoo.demo.model.Message_object_4");
         // templet.delete("com.pinoo.demo.model.Message_object_5");
         // templet.delete("com.pinoo.demo.model.Message_object_6");
-    }
-
-    @Test
-    public void select() throws Exception {
-        System.out.println(sessionDao.load(24l));
     }
 
     // @Test

@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -267,6 +268,17 @@ public class ReflectionUtil {
         Class<?> returnType = getMethodReturnType(method);
         return (Integer.class.equals(returnType) || Integer.TYPE.equals(returnType) || Long.class.equals(returnType) || Long.TYPE
                 .equals(returnType));
+    }
+
+    /**
+     * 判断方法返回的是否集合类型
+     * 
+     * @param method
+     * @return
+     */
+    public static boolean isMethodReturnMany(Method method) {
+        Class<?> returnType = getMethodReturnType(method);
+        return Collection.class.isAssignableFrom(returnType) || returnType.isArray();
     }
 
 }

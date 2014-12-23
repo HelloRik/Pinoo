@@ -1,7 +1,6 @@
 package com.pinoo.storage.mongodb.dao;
 
 import java.beans.PropertyDescriptor;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -31,12 +30,15 @@ import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer
 import org.springframework.data.redis.serializer.RedisSerializer;
 
 import com.mongodb.DBObject;
+import com.pinoo.annotation.method.MethodParam;
+import com.pinoo.annotation.method.MethodProxy;
+import com.pinoo.annotation.method.Page;
+import com.pinoo.annotation.method.PageCursor;
+import com.pinoo.annotation.method.PageSize;
+import com.pinoo.common.utils.AnnotationScaner;
 import com.pinoo.common.utils.ReflectionUtil;
 import com.pinoo.common.utils.lock.ZMutexLock;
-import com.pinoo.storage.mongodb.annotation.dao.CacheDaoMethod;
-import com.pinoo.storage.mongodb.annotation.dao.CacheMethodEnum;
-import com.pinoo.storage.mongodb.annotation.dao.CacheMethodParam;
-import com.pinoo.storage.mongodb.annotation.dao.CacheMethodParamEnum;
+import com.pinoo.mapping.MethodType;
 import com.pinoo.storage.mongodb.annotation.model.ColumnKey;
 import com.pinoo.storage.mongodb.annotation.model.FieldInfo;
 import com.pinoo.storage.mongodb.annotation.model.ListFieldInfo;
@@ -150,10 +152,8 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
 
     private void initObjectCache() throws Exception {
         this.enableObjectCache = modelInfo.cacheObject();
-
         this.objectFormat = this.entityClass.getName() + objectCacheKeySign;
         this.existFormat = this.entityClass.getName() + "_exist_";
-
     }
 
     protected void initListInfo() throws Exception {
@@ -213,15 +213,12 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
                 format += map.get(key) + "_";
             }
         }
-        // saveLog(this.loggerTypeTag, "formatQueryKey", "format:{}", format);
+        saveLog(this.loggerTypeTag, "formatQueryKey", "format:{}", format);
         return format;
     }
 
     @Override
     public T load(ID id) throws Exception {
-
-        // long startTime = System.currentTimeMillis();
-
         String key = formatCacheKey(this.objectFormat, id);
         T object = null;
 
@@ -236,9 +233,6 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
                 this.objectOps.set(key, object, OBJECT_EXPIRED_TIME, DEFAULT_TIME_UNIT);
             }
         }
-        // saveLog(this.loggerTypeTag, "load", "load obj time:{}",
-        // (System.currentTimeMillis() - startTime));
-
         return object;
     }
 
@@ -277,8 +271,7 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
             if (this.templet.hasKey(key) && this.enableObjectCache) {
                 model = super.load(id);
                 objectOps.set(key, model, OBJECT_EXPIRED_TIME, DEFAULT_TIME_UNIT);
-                // saveLog(this.loggerTypeTag, "update",
-                // "update object cache,key:{},{}", key, model);
+                saveLog(this.loggerTypeTag, "update", "update object cache,key:{},{}", key, model);
             }
             deleteQueryCache(oldModel);
             addQueryCache(model);
@@ -295,8 +288,7 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
             String key = formatCacheKey(this.objectFormat, id);
             if (this.templet.hasKey(key) && this.enableObjectCache) {
                 this.templet.delete(key);
-                // saveLog(this.loggerTypeTag, "delete",
-                // "delete object cache,key:{},{}", key);
+                saveLog(this.loggerTypeTag, "delete", "delete object cache,key:{},{}", key);
             }
             deleteQueryCache(o);
             return true;
@@ -308,14 +300,12 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
     public int getListCount(ID id, String listName) throws Exception {
         String key = formatListCountCacheKey(listName, id);
         if (this.stringRedisTemplate.hasKey(key)) {
-            // saveLog(this.loggerTypeTag, "getListCount", "hit cache,key:{}",
-            // key);
+            saveLog(this.loggerTypeTag, "getListCount", "hit cache,key:{}", key);
             return Integer.parseInt(countOps.get(key));
         } else {
             int count = super.getListCount(id, listName);
             countOps.set(key, String.valueOf(count), DEFAULT_EXPIRED_TIME, DEFAULT_TIME_UNIT);
-            // saveLog(this.loggerTypeTag, "getListCount",
-            // "NOT hit cache,key:{}", key);
+            saveLog(this.loggerTypeTag, "getListCount", "NOT hit cache,key:{}", key);
             return count;
         }
     }
@@ -326,16 +316,13 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
 
     private final static int DEFAULT_INCR_SETP = 1;
 
-    // private final static int DEFAULT_DECR_SETP = -1;
-
     private void updateCountCache(String key, boolean step, int count) {
         if (this.stringRedisTemplate.hasKey(key)) {
             if (step)
                 countOps.increment(key, count);
             else
                 countOps.increment(key, 0 - count);
-            // saveLog(this.loggerTypeTag, "updateCountCache",
-            // "updateCountCache,key:{},step:{}", key, step);
+            saveLog(this.loggerTypeTag, "updateCountCache", "updateCountCache,key:{},step:{}", key, step);
         }
     }
 
@@ -351,9 +338,8 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
             } else {
                 zsetOps.remove(key, values.toArray());
             }
-            // saveLog(this.loggerTypeTag, "updateListCache",
-            // "updateListCache,key:{},step:{},member:{},score:{}", key,
-            // step, values);
+            saveLog(this.loggerTypeTag, "updateListCache", "updateListCache,key:{},step:{},member:{},score:{}", key,
+                    step, values);
         }
     }
 
@@ -451,8 +437,7 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
                 if (object != null && this.enableObjectCache) {
                     this.objectOps.set(key, object, OBJECT_EXPIRED_TIME, DEFAULT_TIME_UNIT);
                 }
-                // saveLog(this.loggerTypeTag, "refreshObjectCache",
-                // "object key:{}", key);
+                saveLog(this.loggerTypeTag, "refreshObjectCache", "object key:{}", key);
             }
             saveLog(this.loggerTypeTag, "refreshObjectCache", "time:{}", System.currentTimeMillis() - start);
         } catch (Exception e) {
@@ -468,8 +453,7 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
     public List<Long> getPageList(ID id, String listName, int page, int pageSize) throws Exception {
         String listKey = formatListCacheKey(listName, id);
         if (!this.templet.hasKey(listKey)) {
-            // saveLog(this.loggerTypeTag, "getPageList",
-            // "not hit cache,key:{}", listKey);
+            saveLog(this.loggerTypeTag, "getPageList", "not hit cache,key:{}", listKey);
             getList(id, listName);
         }
         page = page <= 0 ? 1 : page;
@@ -477,8 +461,7 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
         Set<Long> set = zsetOps.reverseRangeByScore(listKey, 0, Long.MAX_VALUE, (page - 1) * pageSize, pageSize);
 
         if (set != null) {
-            // saveLog(this.loggerTypeTag, "getPageList", "hit cache,key:{}",
-            // listKey);
+            saveLog(this.loggerTypeTag, "getPageList", "hit cache,key:{}", listKey);
             return new ArrayList<Long>(set);
         }
         return null;
@@ -487,16 +470,13 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
     public List<Long> getList(ID id, String listName, long cursor, int pageSize) throws Exception {
         String listKey = formatListCacheKey(listName, id);
         if (!this.templet.hasKey(listKey)) {
-            // saveLog(this.loggerTypeTag, "getList", "not hit cache,key:{}",
-            // listKey);
+            saveLog(this.loggerTypeTag, "getList", "not hit cache,key:{}", listKey);
             getList(id, listName);
         }
         cursor = cursor <= 0 ? Long.MAX_VALUE : cursor - 1;
         Set<Long> set = zsetOps.reverseRangeByScore(listKey, 0, cursor, 0, pageSize);
 
         if (set != null) {
-            // saveLog(this.loggerTypeTag, "getList", "hit cache,key:{}",
-            // listKey);
             return new ArrayList<Long>(set);
         }
         return null;
@@ -545,8 +525,7 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
         Set<Long> set = zsetOps.reverseRangeByScore(listKey, 0, Long.MAX_VALUE);
 
         if (set != null) {
-            // saveLog(this.loggerTypeTag, "getList", "hit cache,key:{}",
-            // listKey);
+            saveLog(this.loggerTypeTag, "getList", "hit cache,key:{}", listKey);
             return new ArrayList<Long>(set);
         }
         return null;
@@ -556,12 +535,10 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
     public boolean existList(ID id, String listName, List<Long> objs) throws Exception {
         String key = getExistKey(id, listName, objs);
         if (this.stringRedisTemplate.hasKey(key)) {
-            // saveLog(this.loggerTypeTag, "existList", "hit cache,key:{}",
-            // key);
+            saveLog(this.loggerTypeTag, "existList", "hit cache,key:{}", key);
             return true;
         } else {
-            // saveLog(this.loggerTypeTag, "existList", "NOT hit cache,key:{}",
-            // key);
+            saveLog(this.loggerTypeTag, "existList", "NOT hit cache,key:{}", key);
             boolean flag = super.existList(id, listName, objs);
             if (flag) {
                 this.countOps.set(key, "1", QUERY_OBJECT_EXPIRED_TIME, DEFAULT_TIME_UNIT);
@@ -590,6 +567,10 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
 
     private Map<Method, Map<Integer, String>> paramsIndexMap = new HashMap<Method, Map<Integer, String>>();
 
+    private Map<Method, Boolean> returnCountMap = new HashMap<Method, Boolean>();
+
+    private Map<Method, Boolean> returnManyMap = new HashMap<Method, Boolean>();
+
     // 未被格式化的CacheKey。
     private Map<Method, String> unformatCacheKeys = new HashMap<Method, String>();
 
@@ -598,16 +579,15 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
         Method[] methods = this.getClass().getMethods();
         logger.info("==========================");
         for (Method method : methods) {
-            CacheDaoMethod daoMethod = method.getAnnotation(CacheDaoMethod.class);
-            if (null != daoMethod) {
-                CacheMethodEnum methodEnum = daoMethod.methodEnum();
+            MethodProxy methodProxy = method.getAnnotation(MethodProxy.class);
+            if (methodProxy != null && methodProxy.type() == MethodType.SELECT) {
+                boolean returnCount = ReflectionUtil.isMethodReturnCount(method);
                 String cacheKey = entityClass.getName();
 
-                if (methodEnum == CacheMethodEnum.getList || methodEnum == CacheMethodEnum.getPageList
-                        || methodEnum == CacheMethodEnum.getAllList) {
-                    cacheKey = cacheKey + queryListCacheKeySign;
-                } else if (methodEnum == CacheMethodEnum.getCount) {
+                if (returnCount) {
                     cacheKey = cacheKey + queryCountCacheKeySign;
+                } else {
+                    cacheKey = cacheKey + queryListCacheKeySign;
                 }
 
                 LinkedHashMap<Integer, String> fieldNames = getParamsFields(method);
@@ -622,24 +602,24 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
         }
         logger.info("==========================");
 
-        // 找出size ,cursor对应的参数序列
+        // 找出size ,cursor对应的参数下标
 
         for (Method method : methods) {
-            CacheDaoMethod daoMethod = method.getAnnotation(CacheDaoMethod.class);
-            if (null != daoMethod) {
-                int sizeIdx = getParamsIndex(method, CacheMethodParamEnum.SIZE);
+            MethodProxy methodProxy = method.getAnnotation(MethodProxy.class);
+            if (methodProxy != null) {
+                int sizeIdx = AnnotationScaner.scanMethodParamIndex(method, PageSize.class);
                 if (sizeIdx >= 0) {
                     sizeIndex.put(method, sizeIdx);
                     logger.info(daoClassName + "class:{},method:{},sizeIdx:{}", new Object[] { entityClass.getName(),
                             method.getName(), sizeIdx });
                 }
-                int cursorIdx = getParamsIndex(method, CacheMethodParamEnum.CURSOR);
+                int cursorIdx = AnnotationScaner.scanMethodParamIndex(method, PageCursor.class);
                 if (cursorIdx >= 0) {
                     cursorIndex.put(method, cursorIdx);
                     logger.info(daoClassName + "class:{},method:{},cursorIdx:{}", new Object[] { entityClass.getName(),
                             method.getName(), cursorIdx });
                 }
-                int pageIdx = getParamsIndex(method, CacheMethodParamEnum.PAGE);
+                int pageIdx = AnnotationScaner.scanMethodParamIndex(method, Page.class);
                 if (pageIdx >= 0) {
                     pageIndex.put(method, pageIdx);
                     logger.info(daoClassName + "class:{},method:{},pageIdx:{}", new Object[] { entityClass.getName(),
@@ -651,11 +631,15 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
 
         // 生成query对象
         for (Method method : methods) {
-            CacheDaoMethod daoMethod = method.getAnnotation(CacheDaoMethod.class);
-            if (daoMethod != null) {
-                CacheMethodEnum methodEnum = daoMethod.methodEnum();
-                if (methodEnum != CacheMethodEnum.getList && methodEnum != CacheMethodEnum.getPageList
-                        && methodEnum != CacheMethodEnum.getAllList && methodEnum != CacheMethodEnum.getCount) {
+            MethodProxy methodProxy = method.getAnnotation(MethodProxy.class);
+            if (methodProxy != null && methodProxy.type() == MethodType.SELECT) {
+                boolean isReturnCount = ReflectionUtil.isMethodReturnCount(method);
+                boolean isReturnMany = ReflectionUtil.isMethodReturnMany(method);
+
+                this.returnCountMap.put(method, isReturnCount);
+                this.returnManyMap.put(method, isReturnMany);
+
+                if (!isReturnCount && !isReturnMany) {
                     continue;
                 }
 
@@ -688,25 +672,28 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
     private LinkedHashMap<Integer, String> getParamsFields(Method method) {
         LinkedHashMap<Integer, String> list = new LinkedHashMap<Integer, String>();
         String[] result = new String[method.getParameterTypes().length];
-        // String[] result = ReflectUtil.getMethodParamNames(method);
-        // for (int i = 0; i < result.length; i++) {
-        // String paramName = result[i];
-        // if (paramName.equals("size") || paramName.equals("cursor")) {
-        // result[i] = "";
-        // }
-        // }
-        Annotation[][] annotations = method.getParameterAnnotations();
-        for (int i = 0; i < annotations.length; i++) {
-            if (annotations[i].length > 0) {
-                Annotation one = annotations[i][0];
-                if (one instanceof CacheMethodParam) {
-                    CacheMethodParam param = (CacheMethodParam) one;
-                    if (param.paramEnum() == CacheMethodParamEnum.NORMAL) {
-                        result[i] = param.field();
-                    }
-                }
+
+        List<MethodParam> paramAnns = AnnotationScaner.scanMethodParam(method, MethodParam.class);
+
+        for (int i = 0; i < paramAnns.size(); i++) {
+            MethodParam ann = paramAnns.get(i);
+            if (ann != null) {
+                result[i] = ann.value();
             }
         }
+
+        // Annotation[][] annotations = method.getParameterAnnotations();
+        // for (int i = 0; i < annotations.length; i++) {
+        // if (annotations[i].length > 0) {
+        // Annotation one = annotations[i][0];
+        // if (one instanceof CacheMethodParam) {
+        // CacheMethodParam param = (CacheMethodParam) one;
+        // if (param.paramEnum() == CacheMethodParamEnum.NORMAL) {
+        // result[i] = param.field();
+        // }
+        // }
+        // }
+        // }
 
         for (int i = 0; i < result.length; i++) {
             String s = result[i];
@@ -716,30 +703,6 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
         }
 
         return list;
-    }
-
-    /**
-     * 获取参数下标
-     * 
-     * @param method
-     * @param paramEnum
-     * @return
-     */
-    private int getParamsIndex(Method method, CacheMethodParamEnum paramEnum) {
-        int index = -1;
-        Annotation[][] annotations = method.getParameterAnnotations();
-        for (int i = 0; i < annotations.length; i++) {
-            if (annotations[i].length > 0) {
-                Annotation one = annotations[i][0];
-                if (one instanceof CacheMethodParam) {
-                    CacheMethodParam param = (CacheMethodParam) one;
-                    if (param.paramEnum() == paramEnum) {
-                        index = i;
-                    }
-                }
-            }
-        }
-        return index;
     }
 
     public String generateCacheKey(String name) {
@@ -778,14 +741,10 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
         return score;
     }
 
-    public List<ID> _queryForList(String listCacheKey, Query listQuery, long cursor, int page, int size)
+    public List<ID> _queryForList(String listCacheKey, Query listQuery, long cursor, int page, int pageSize)
             throws Exception {
-        // String decidedCacheKey = decideListCacheKey(unDecidedCacheKey,
-        // order);
-
         if (!this.templet.hasKey(listCacheKey)) {
-            // saveLog(this.loggerTypeTag, "getList", "not hit cache,key:{}",
-            // listKey);
+            saveLog(this.loggerTypeTag, "getList", "not hit cache,key:{}", listCacheKey);
             List<T> objects = super.queryForObjectList(listQuery);
             if (objects == null)
                 return null;
@@ -794,23 +753,23 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
                 long score = getObjectSort(o);
                 queryZsetOps.add(listCacheKey, (ID) this.primaryFieldInfo.getReadMethod().invoke(o), score);
             }
-
             this.templet.expire(listCacheKey, LIST_EXPIRED_TIME, DEFAULT_TIME_UNIT);
         }
 
         Set<ID> set = null;
 
-        if (cursor >= 0) {
-            cursor = cursor <= 0 ? Long.MAX_VALUE : cursor - 1;
-            set = this.queryZsetOps.reverseRangeByScore(listCacheKey, 0, cursor, 0, size);
-        } else {
+        if (pageSize <= 0) {
+            set = this.queryZsetOps.reverseRangeByScore(listCacheKey, 0, Long.MAX_VALUE, 0, Integer.MAX_VALUE);
+        } else if (page >= 0) {
             page = page <= 0 ? 1 : page;
-            set = this.queryZsetOps.reverseRangeByScore(listCacheKey, 0, Long.MAX_VALUE, (page - 1) * size, size);
+            set = this.queryZsetOps.reverseRangeByScore(listCacheKey, 0, Long.MAX_VALUE, (page - 1) * pageSize,
+                    pageSize);
+        } else {
+            cursor = cursor <= 0 ? Long.MAX_VALUE : cursor - 1;
+            set = this.queryZsetOps.reverseRangeByScore(listCacheKey, 0, cursor, 0, pageSize);
         }
 
         if (set != null) {
-            // saveLog(this.loggerTypeTag, "getList", "hit cache,key:{}",
-            // listKey);
             return new ArrayList<ID>(set);
         }
         return null;
@@ -899,6 +858,14 @@ public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements 
 
     public Map<Method, Integer> getPageIndex() {
         return pageIndex;
+    }
+
+    public boolean isMethodReturnCount(Method method) {
+        return this.returnCountMap.get(method);
+    }
+
+    public boolean isMethodReturnMany(Method method) {
+        return this.returnManyMap.get(method);
     }
 
 }

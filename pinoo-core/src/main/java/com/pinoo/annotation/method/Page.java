@@ -1,4 +1,4 @@
-package com.pinoo.storage.mybatis.annotation.method;
+package com.pinoo.annotation.method;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

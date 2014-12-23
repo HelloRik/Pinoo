@@ -1,4 +1,4 @@
-package com.pinoo.storage.mybatis.annotation.method;
+package com.pinoo.annotation.method;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,8 +9,8 @@ import com.pinoo.mapping.MethodType;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Method {
+public @interface MethodProxy {
 
-    MethodType type();
+    MethodType type() default MethodType.SELECT;
 
 }

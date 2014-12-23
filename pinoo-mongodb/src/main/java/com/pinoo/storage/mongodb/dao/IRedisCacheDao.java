@@ -17,9 +17,4 @@ public interface IRedisCacheDao<T, K> extends IMongoDao<T, K> {
 
     public List<Long> getList(K id, String listName, long cursor, int pageSize) throws Exception;
 
-    // public List<K> queryForList(DBObject query, int page, int pageSize)
-    // throws Exception;
-    //
-    // public List<K> queryForListByCursor(DBObject query, long cursor, int
-    // pageSize) throws Exception;
 }
