@@ -15,6 +15,7 @@
   		<module>pinoo-core</module>
   		<module>pinoo-mybatis</module>
   		<module>pinoo-mongodb</module>
+  		<module>pinoo-neo4j</module>
   		<module>pinoo-demo</module>
   </modules>
 

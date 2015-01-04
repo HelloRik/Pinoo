@@ -13,4 +13,5 @@ public @interface MethodProxy {
 
     MethodType type() default MethodType.SELECT;
 
+    String sql() default "";
 }

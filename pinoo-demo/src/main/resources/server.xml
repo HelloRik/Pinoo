@@ -10,10 +10,9 @@
 	<import resource="datasource.xml"/>
 	<import resource="mongo.xml"/>
     <!-- --><import resource="cache-config.xml"/> 
-    <!-- --><import resource="duboo.xml"/> 
-    
-    
-    
+    <import resource="duboo.xml"/> 
+	<!--<import resource="neo4j.xml"/>     -->
+
     <!-- 注解支持，指定扫描路径-->
     <context:annotation-config/>
     <context:component-scan base-package="com.pinoo"/>
@@ -28,7 +27,6 @@
 				 </list>
 			</property>		
 	</bean>
-    
     
     <!-- DAO Configuration-->
     <bean id="messageDao" class="org.mybatis.spring.mapper.MapperFactoryBean">

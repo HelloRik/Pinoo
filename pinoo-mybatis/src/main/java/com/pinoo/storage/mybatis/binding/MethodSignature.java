@@ -303,13 +303,7 @@ public class MethodSignature {
                 // .getMappedStatement("com.pinoo.demo.dao.MessageDao.getMsgListByStatus");
 
                 SqlMapperXmlBuilder sqlMapperXmlBuilder = new SqlMapperXmlBuilder(this);
-
                 String xml = sqlMapperXmlBuilder.buildXml();
-
-                System.out.println("======================");
-                System.out.println(xml);
-                System.out.println("======================");
-
                 InputStream input = new ByteArrayInputStream(xml.getBytes());
                 XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(input, configuration, "",
                         configuration.getSqlFragments());

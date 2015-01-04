@@ -1,6 +1,7 @@
 package com.pinoo.storage.mybatis.builder;
 
 import java.io.ByteArrayOutputStream;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -11,6 +12,9 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -23,6 +27,8 @@ import com.pinoo.mapping.MethodType;
 import com.pinoo.storage.mybatis.binding.MethodSignature;
 
 public class SqlMapperXmlBuilder {
+
+    private Logger logger = LoggerFactory.getLogger(SqlMapperXmlBuilder.class);
 
     private MethodSignature methodSignature;
 
@@ -56,6 +62,12 @@ public class SqlMapperXmlBuilder {
                 + "<!DOCTYPE mapper PUBLIC \"-//mybatis.org//DTD Mapper 3.0//EN\" \"http://mybatis.org/dtd/mybatis-3-mapper.dtd\">"
                 + xml.substring(xml.indexOf(">") + 1);
 
+        if (this.logger.isDebugEnabled()) {
+            this.logger.debug("====================== build " + this.methodSignature.getMapperInterface().getName()
+                    + " sql mapper xml ========================");
+            this.logger.debug(xml);
+            this.logger.debug("==================================================================");
+        }
         return xml;
     }
 
@@ -67,19 +79,18 @@ public class SqlMapperXmlBuilder {
                 MethodType methodType = methodAnn.type();
                 switch (methodType) {
                 case SELECT:
-                    buildSelectCommand(document, root, method.getName(), methodAnn, method);
+                    buildSelectCommand(document, root, methodName, methodAnn, method);
                     break;
                 case INSERT:
-                    buildInsertCommand(document, root, method.getName());
+                    buildInsertCommand(document, root, methodName);
                     break;
                 case UPDATE:
-                    buildUpdateCommand(document, root, method.getName());
+                    buildUpdateCommand(document, root, methodName);
                     break;
                 case DELETE:
-                    buildDeleteCommand(document, root, method.getName());
+                    buildDeleteCommand(document, root, methodName);
                     break;
                 }
-
             }
         }
     }
@@ -141,8 +152,8 @@ public class SqlMapperXmlBuilder {
         insertCommand.setTextContent(sb.toString());
     }
 
-    private void buildSelectCommand(Document document, Element root, String id, MethodProxy methodAnn,
-            java.lang.reflect.Method method) throws Exception {
+    private void buildSelectCommand(Document document, Element root, String id, MethodProxy methodProxy, Method method)
+            throws Exception {
 
         boolean isReturnCount = ReflectionUtil.isMethodReturnCount(method);
 
@@ -172,36 +183,41 @@ public class SqlMapperXmlBuilder {
         }
 
         StringBuffer sb = new StringBuffer();
-        if (isReturnCount) {
-            sb.append("select count(*) from " + this.methodSignature.getTableName());
-        } else {
-            sb.append("select ");
-            for (int i = 0; i < methodSignature.getFields().size(); i++) {
-                FieldInfo info = methodSignature.getFields().get(i);
-                sb.append("`" + info.getDbName() + "`");
-                if (i < methodSignature.getFields().size() - 1)
-                    sb.append(",");
-            }
-            sb.append(" from " + this.methodSignature.getTableName());
-        }
-        boolean isFirst = true;
-        List<MethodParam> paramAnns = AnnotationScaner.scanMethodParam(method, MethodParam.class);
 
-        for (MethodParam p : paramAnns) {
-            String paramName = p.value();
-            for (FieldInfo info : methodSignature.getFields()) {
-                if (info.getName().equals(paramName)) {
-                    if (isFirst) {
-                        sb.append(" where ");
-                        isFirst = false;
-                    } else {
-                        sb.append(" and ");
+        if (StringUtils.isEmpty(methodProxy.sql())) {
+
+            if (isReturnCount) {
+                sb.append("select count(*) from " + this.methodSignature.getTableName());
+            } else {
+                sb.append("select ");
+                for (int i = 0; i < methodSignature.getFields().size(); i++) {
+                    FieldInfo info = methodSignature.getFields().get(i);
+                    sb.append("`" + info.getDbName() + "`");
+                    if (i < methodSignature.getFields().size() - 1)
+                        sb.append(",");
+                }
+                sb.append(" from " + this.methodSignature.getTableName());
+            }
+            boolean isFirst = true;
+            List<MethodParam> paramAnns = AnnotationScaner.scanMethodParam(method, MethodParam.class);
+
+            for (MethodParam p : paramAnns) {
+                String paramName = p.value();
+                for (FieldInfo info : methodSignature.getFields()) {
+                    if (info.getName().equals(paramName)) {
+                        if (isFirst) {
+                            sb.append(" where ");
+                            isFirst = false;
+                        } else {
+                            sb.append(" and ");
+                        }
+                        sb.append("`" + info.getDbName() + "` = #{" + paramName + "}");
+                        continue;
                     }
-                    sb.append("`" + info.getDbName() + "` = #{" + paramName + "}");
-                    continue;
                 }
             }
-
+        } else {
+            sb.append(methodProxy.sql());
         }
         selectCommand.setTextContent(sb.toString());
     }

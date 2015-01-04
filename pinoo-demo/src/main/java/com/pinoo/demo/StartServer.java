@@ -28,6 +28,11 @@ public class StartServer {
 
     private MessageDao dao = context.getBean("messageDao", MessageDao.class);
 
+    @Test
+    public void testGetList() {
+        System.out.println(dao.testGetList(2, 1));
+    }
+
     // @Test
     public void delectCache() {
 
@@ -52,7 +57,7 @@ public class StartServer {
         dao.insert(msg);
     }
 
-    @Test
+    // @Test
     public void load() {
         Message msg = dao.load(30);
         System.out.println(msg);
