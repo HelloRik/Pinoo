@@ -23,7 +23,7 @@
 
 
 	<dependencies>
-	
+
 		<!-- spring data redis -->
 		<dependency>
 			<groupId>org.springframework.data</groupId>
@@ -206,6 +206,27 @@
 			<artifactId>commons-pool2</artifactId>
 			<version>2.0</version>
 		</dependency>
+
+		<!-- DES -->
+		<dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.9</version>
+        </dependency>
+		<dependency>
+			<groupId>bouncycastle</groupId>
+			<artifactId>bcprov-jdk16</artifactId>
+			<version>140</version>
+		</dependency>
+
+		<!-- RSA -->
+		<dependency>
+			<groupId>org.codehaus.plexus</groupId>
+			<artifactId>plexus-compiler-javac</artifactId>
+			<version>1.8.1</version>
+		</dependency>
+
+
 
 		<dependency>
 			<groupId>junit</groupId>
