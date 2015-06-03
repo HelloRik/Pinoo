@@ -16,8 +16,6 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.DefaultTypedTuple;
@@ -55,8 +53,6 @@ import com.pinoo.storage.mongodb.annotation.model.ListFieldInfo;
  * @param <ID>主键类型
  */
 public abstract class RedisCacheDao<T, ID> extends MongoDbDao<T, ID> implements IRedisCacheDao<T, ID>, InitializingBean {
-
-    private Logger logger = LoggerFactory.getLogger(RedisCacheDao.class);
 
     private final static String loggerTypeTag = "CACHE";
 

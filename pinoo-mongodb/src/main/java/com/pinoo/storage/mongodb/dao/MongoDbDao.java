@@ -55,9 +55,11 @@ import com.pinoo.storage.mongodb.annotation.model.SortKey;
  */
 public abstract class MongoDbDao<T, ID> implements InitializingBean, ApplicationContextAware, IMongoDao<T, ID> {
 
-    private Logger logger = LoggerFactory.getLogger(MongoDbDao.class);
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final static String loggerTypeTag = "DB";
+
+    protected final static String DB_PRIMARY_KEY_NAME = "_id";
 
     protected ApplicationContext applicationContext;
 
@@ -176,7 +178,7 @@ public abstract class MongoDbDao<T, ID> implements InitializingBean, Application
                     Id primaryKey = field.getAnnotation(Id.class);
 
                     if (primaryKey != null) {
-                        dbName = "_id";
+                        dbName = DB_PRIMARY_KEY_NAME;
                     }
 
                     FieldInfo fieldInfo = new FieldInfo(field, name, dbName, writeMethod, readMethod);
@@ -207,7 +209,7 @@ public abstract class MongoDbDao<T, ID> implements InitializingBean, Application
                     Id primaryKey = field.getAnnotation(Id.class);
                     if (primaryKey != null) {
                         String name = one.getName();
-                        String dbName = "_id";
+                        String dbName = DB_PRIMARY_KEY_NAME;
                         Method writeMethod = one.getWriteMethod();
                         Method readMethod = one.getReadMethod();
                         FieldInfo tempFieldInfo = new FieldInfo(field, name, dbName, writeMethod, readMethod);

@@ -145,23 +145,31 @@ public class RSAUtil {
         PrivateKey privateKey = (RSAPrivateKey) keyPair.getPrivate();
 
         String publicKeyString = getKeyString(publicKey);
-        System.out.println("public:\n" + publicKeyString);
+        // System.out.println("public:\n" + publicKeyString);
 
         String privateKeyString = getKeyString(privateKey);
-        System.out.println("private:\n" + privateKeyString);
+        // System.out.println("private:\n" + privateKeyString);
 
         // 明文
         String plainText = "hello_rik@sina.com";
 
+        long startTime = System.currentTimeMillis();
         // 加密
         String secretText = doEncrypt(publicKey, plainText);
-
+        long endTime = System.currentTimeMillis();
+        System.out.println("===" + (endTime - startTime));
         System.out.println("密文:\n" + secretText);
 
+        startTime = System.currentTimeMillis();
         plainText = doDecrypt(privateKey, secretText);
-
+        endTime = System.currentTimeMillis();
+        System.out.println("===" + (endTime - startTime));
         System.out.println(plainText);
 
+        startTime = System.currentTimeMillis();
+        secretText = doEncrypt(publicKey, plainText);
+        endTime = System.currentTimeMillis();
+        System.out.println("@@@@###" + (endTime - startTime));
     }
 
 }
